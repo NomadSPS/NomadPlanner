@@ -205,6 +205,15 @@ public class Colors {
 	public static final Color VERY_LIGHT_GRAY = new Color(0xEAEAEA);
 	public static final Color NOT_TOO_DARK_GRAY=new Color(120,120,120);
 
+	// NomadPlan palette
+	public static final Color NOMAD_TEAL = new Color(0x0D9488);
+	public static final Color NOMAD_TEAL_DARK = new Color(0x0F766E);
+	public static final Color NOMAD_SLATE = new Color(0x334155);
+	public static final Color NOMAD_ERROR = new Color(0xDC2626);
+	public static final Color NOMAD_BORDER = new Color(0xE2E8F0);
+	public static final Color NOMAD_SECONDARY = new Color(0x64748B);
+	public static final Color NOMAD_SURFACE = new Color(0xF1F5F9);
+
   private static Object[][] data = {
 	  {"ALICE_BLUE",ALICE_BLUE},
 	  {"ANTIQUE_WHITE",ANTIQUE_WHITE},
@@ -341,7 +350,14 @@ public class Colors {
 	  {"NORMAL_LIGHT_YELLOW",NORMAL_LIGHT_YELLOW},
 	  {"MULTIPROJET1",MULTIPROJET1},
 	  {"MULTIPROJET0",MULTIPROJET0},
-	  {"VERY_LIGHT_GRAY",VERY_LIGHT_GRAY}
+	  {"VERY_LIGHT_GRAY",VERY_LIGHT_GRAY},
+	  {"NOMAD_TEAL",NOMAD_TEAL},
+	  {"NOMAD_TEAL_DARK",NOMAD_TEAL_DARK},
+	  {"NOMAD_SLATE",NOMAD_SLATE},
+	  {"NOMAD_ERROR",NOMAD_ERROR},
+	  {"NOMAD_BORDER",NOMAD_BORDER},
+	  {"NOMAD_SECONDARY",NOMAD_SECONDARY},
+	  {"NOMAD_SURFACE",NOMAD_SURFACE}
  };
 
 	private static HashMap colorMap = null;
