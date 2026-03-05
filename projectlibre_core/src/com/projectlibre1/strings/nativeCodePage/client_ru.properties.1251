@@ -12,7 +12,7 @@
 # WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for the 
 # specific language governing rights and limitations under the License. The 
 # Original Code is ProjectLibre. The Original Developer is the Initial Developer 
-# and is ProjectLibre Inc. All portions of the code written by ProjectLibre are 
+# and is NomadPlan. All portions of the code written by ProjectLibre are 
 # Copyright (c) 2012-2019. All Rights Reserved. All portions of the code written by 
 # ProjectLibre are Copyright (c) 2012-2019. All Rights Reserved. Contributor 
 # ProjectLibre, Inc.
@@ -106,7 +106,7 @@
 
 
 AboutDialog.About=ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-AboutDialog.copyright=Copyright 2012-2019 ProjectLibre Inc.  ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+AboutDialog.copyright=Copyright 2012-2019 NomadPlan.  ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 AccessControlPolicy.PUBLIC=ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 AccessControlPolicy.RESTRICTED=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 AccrualType.End=ï¿½ï¿½ï¿½ï¿½ï¿½
@@ -703,9 +703,9 @@ NewBaseCalendarDialog.CreateACopyOfCalendar=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï
 NewBaseCalendarDialog.CreateANewBaseCalendar=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 NewBaseCalendarDialog.Name=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 NewBaseCalendarDialog.NewBaseCalendar=\ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-Open_Text.ApplicationTitle=ProjectLibre
+Open_Text.ApplicationTitle=NomadPlan
 OpenProjectDialog.LockedBy=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-Open_Text.ShortTitle=ProjectLibre
+Open_Text.ShortTitle=NomadPlan
 Open_Text.welcomeToPod=ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ProjectLibre
 OpenProjectDialog.CreationDate=ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 OpenProjectDialog.ModificationDate=ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
@@ -966,7 +966,7 @@ TaskInformationDialog.Resources=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 TaskInformationDialog.Successors=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 TaskInformationDialog.TaskInformation=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 Text.Allocated=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-Text.ApplicationTitle=ProjectLibre
+Text.ApplicationTitle=NomadPlan
 Text.Assign=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 Text.AssignResources=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 Text.Baseline=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½

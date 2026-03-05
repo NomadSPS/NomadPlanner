@@ -164,7 +164,7 @@
 		<if>
  			<equals arg1="${build_contrib}" arg2="true" />
  			<then>
- 				<jar jarfile="${dist}/projectlibre.jar">
+ 				<jar jarfile="${dist}/nomadplan.jar">
  					<zipfileset dir="${build}" >
  						<include name="**/*" />
  					</zipfileset>
@@ -183,7 +183,7 @@
  				</jar>
 			</then>
  			<else>
- 				<jar jarfile="${dist}/projectlibre.jar">
+ 				<jar jarfile="${dist}/nomadplan.jar">
  					<zipfileset dir="${build}" >
  						<include name="**/*" />
  					</zipfileset>
@@ -228,7 +228,7 @@
 
 	<target name="fatjar"  depends="dist">
 
-		<jar destfile="${packages}/projectlibre-${version}.jar">
+		<jar destfile="${packages}/nomadplan-${version}.jar">
 			<zipgroupfileset dir="${dist}" includes="**/*.jar"/>
 			<zipfileset dir="." >
 				<include name="license/**" />
