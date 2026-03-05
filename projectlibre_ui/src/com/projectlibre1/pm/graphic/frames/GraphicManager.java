@@ -179,6 +179,7 @@ import com.projectlibre1.pm.graphic.frames.workspace.NamedFrame;
 import com.projectlibre1.pm.graphic.frames.workspace.NamedFrameEvent;
 import com.projectlibre1.pm.graphic.frames.workspace.NamedFrameListener;
 import com.projectlibre1.pm.graphic.laf.LafManager;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.pm.graphic.spreadsheet.SpreadSheet;
 import com.projectlibre1.pm.graphic.spreadsheet.common.CommonSpreadSheet;
 import com.projectlibre1.pm.graphic.spreadsheet.selection.event.SelectionNodeEvent;
@@ -2449,6 +2450,19 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
 		localeButton.setBorderPainted(false);
 		localeButton.setFocusPainted(false);
 		localeButton.setContentAreaFilled(false);
+		JButton themeToggle = new JButton(NomadPlanColors.isDarkMode() ? "\u263E" : "\u2600");
+		themeToggle.setToolTipText(Messages.getString("Menu.toggleDarkMode"));
+		themeToggle.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				getLafManager().toggleTheme();
+				themeToggle.setText(NomadPlanColors.isDarkMode() ? "\u263E" : "\u2600");
+			}
+		});
+		themeToggle.setBorderPainted(false);
+		themeToggle.setFocusPainted(false);
+		themeToggle.setContentAreaFilled(false);
+		languageSelector.add(themeToggle, BorderLayout.CENTER);
 		languageSelector.add(localeButton,BorderLayout.EAST);
 		
 //		String[] slocales=Settings.LANGUAGES.split(";");
