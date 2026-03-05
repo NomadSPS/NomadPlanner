@@ -198,10 +198,10 @@ public class Colors {
 	public static final Color YELLOW_GREEN = new Color(0x9acd32);
 
 	// A few added for ProjectLibre
-	public static final Color NORMAL_YELLOW = new Color(0xffffb0);
-	public static final Color NORMAL_LIGHT_YELLOW = new Color(0xffffe0);
-	public static final Color MULTIPROJET1 = new Color(0xececec);
-	public static final Color MULTIPROJET0 = new Color(0xdcecec);
+	public static final Color NORMAL_YELLOW = new Color(0xFFFFFF);
+	public static final Color NORMAL_LIGHT_YELLOW = new Color(0xF8F9FA);
+	public static final Color MULTIPROJET1 = new Color(0xF8F9FA);
+	public static final Color MULTIPROJET0 = new Color(0xF0FDFA);
 	public static final Color VERY_LIGHT_GRAY = new Color(0xEAEAEA);
 	public static final Color NOT_TOO_DARK_GRAY=new Color(120,120,120);
 
