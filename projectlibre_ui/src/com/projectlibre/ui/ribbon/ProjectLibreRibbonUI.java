@@ -143,6 +143,7 @@ import org.pushingpixels.flamingo.internal.utils.FlamingoUtilities;
 import org.pushingpixels.flamingo.internal.utils.KeyTipManager;
 import org.pushingpixels.flamingo.internal.utils.RenderingUtils;
 
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.BrowserControl;
 
 public class ProjectLibreRibbonUI extends RibbonUI {
@@ -204,8 +205,8 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 
 	// projectlibre
 
-	public static final Color RIBBON_MENU_COLOR = new Color(200,200,200);
-	public static final Color RIBBON_MENU_DARK_COLOR = new Color(140,140,140);
+	public static Color RIBBON_MENU_COLOR = NomadPlanColors.surface();
+	public static Color RIBBON_MENU_DARK_COLOR = NomadPlanColors.border();
 	//public static final Color RIBBON_MENU_LIGHT_COLOR = new Color(220,220,220);
 
 	protected int appMenuButtonWidth = 180;
@@ -635,8 +636,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 		int h=66;
 		g2d.setColor(background1);
 		g2d.fillRect(0, 0, this.ribbon.getWidth(), this.ribbon.getHeight());
-		Paint gradient = new GradientPaint(0,0,RIBBON_MENU_DARK_COLOR,200, 0,background1);
-		g2d.setPaint(gradient);
+		g2d.setColor(NomadPlanColors.surface());
 		g2d.fillRect(0, 0, w, h);
 		
 		g2d.setColor(background1);
@@ -1301,7 +1301,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 								height - 1);
 
 						// task group title
-						g2d.setColor(FlamingoUtilities.getColor(Color.black,
+						g2d.setColor(FlamingoUtilities.getColor(NomadPlanColors.textPrimary(),
 								"Button.foreground"));
 						FontMetrics fm = this.getFontMetrics(ribbon.getFont());
 						int yOffset = (height + fm.getHeight()) / 2
