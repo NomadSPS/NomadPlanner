@@ -80,7 +80,7 @@ public class MainRibbonFrame extends JRibbonFrame implements FrameHolder{
 	public MainRibbonFrame(String name, String projectUrl, String server) throws HeadlessException {
 		super(name);
 		setIconImage(IconManager.getImage("application.icon"));
-		appMenuIcon=IconManager.getRibbonIcon("logo.ProjectLibre",144,31);
+		appMenuIcon=IconManager.getRibbonIcon("logo.NomadPlan",144,31);
 		setApplicationIcon(IconManager.getRibbonIcon("application.icon",128,128));
 		init();
 	}

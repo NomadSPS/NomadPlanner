@@ -109,13 +109,8 @@ public final class AboutDialog extends AbstractDialog {
 		DefaultFormBuilder builder = new DefaultFormBuilder(layout);
 		builder.setDefaultDialogBorder();
 		CellConstraints cc = new CellConstraints();
-		JLabel logo = new JLabel(IconManager.getIcon("logo.ProjectLibre"));
-		logo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		logo.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent arg0) {
-				BrowserControl.displayURL("http://www.projectlibre.com");//$NON-NLS-1$
-			}});
-		builder.append(logo); 
+		JLabel logo = new JLabel(IconManager.getIcon("logo.NomadPlan"));
+		builder.append(logo);
 		builder.nextLine(2);
 		builder.append(Messages.getContextString("Text.ShortTitle")); //$NON-NLS-1$
 		builder.nextLine(2);
