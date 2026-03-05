@@ -84,18 +84,6 @@ public final class LicenseDialog extends AbstractDialog {
 	private static boolean validated = Preferences.userNodeForPackage(LicenseDialog.class).getBoolean("validatedLicense",false); //$NON-NLS-1$
 	private static boolean resetData;
 	public static boolean showDialog(Frame owner, boolean force) {
-		resetData=!force;
-		if (!Environment.isProjectLibre() && !force)
-			return false;
-		if (!validated || force) {
-			LicenseDialog dlg = new LicenseDialog(owner);
-			if (!validated)
-				dlg.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE); // force user to click a button
-			dlg.doModal();
-			return true;
-		}
-		if (Environment.isProjectLibre())
-			System.setProperty("projectlibre.validation", Preferences.userNodeForPackage(LicenseDialog.class).get("licenseValidationDate","0"));
 		return false;
 	}
 
