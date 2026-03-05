@@ -63,6 +63,7 @@
 			<include name="projectlibre-script.jar" />
 			<!--include name="projectlibre-exchange.jar" /-->
 			<include name="projectlibre-reports.jar" />
+			<include name="lib/flatlaf-3.5.4.jar" />
 		</fileset>
 	</path>
 	
@@ -173,7 +174,7 @@
 
  					<manifest>
  						<attribute name="Main-Class" value="com.projectlibre1.main.Main"/>
- 						<attribute name="Class-Path" value="lib/projectlibre-contrib.jar lib/projectlibre-script.jar lib/projectlibre-reports.jar"/>
+ 						<attribute name="Class-Path" value="lib/projectlibre-contrib.jar lib/projectlibre-script.jar lib/projectlibre-reports.jar lib/flatlaf-3.5.4.jar"/>
  					</manifest>
 
  					<metainf dir="license">
@@ -214,6 +215,11 @@
  				  <copy todir="${dist}/lib">
  				    <fileset dir="../projectlibre_contrib/">
  				    	<include name="*.jar" />
+ 				  	</fileset>
+ 				  </copy>
+ 				  <copy todir="${dist}/lib">
+ 				    <fileset dir="../projectlibre_contrib/lib">
+ 				    	<include name="flatlaf-3.5.4.jar" />
  				  	</fileset>
  				  </copy>
 			</then>
