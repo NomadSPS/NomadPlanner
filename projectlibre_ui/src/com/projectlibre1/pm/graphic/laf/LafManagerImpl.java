@@ -77,6 +77,7 @@ import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.graphic.configuration.shape.Colors;
 import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.Environment;
+import com.projectlibre.ui.ribbon.ProjectLibreRibbonUI;
 import java.util.prefs.Preferences;
 
 public class LafManagerImpl implements LafManager {
@@ -148,6 +149,7 @@ public class LafManagerImpl implements LafManager {
                 FlatLightLaf.setup();
             }
             applyNomadPlanDefaults();
+            ProjectLibreRibbonUI.refreshColors();
             plaf = UIManager.getLookAndFeel();
         } catch (Exception e) {
             e.printStackTrace();
