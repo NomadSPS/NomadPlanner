@@ -209,23 +209,31 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 	public static Color RIBBON_MENU_DARK_COLOR = NomadPlanColors.border();
 	//public static final Color RIBBON_MENU_LIGHT_COLOR = new Color(220,220,220);
 
+	/**
+	 * Refreshes static color fields from NomadPlanColors.
+	 * Call this after a theme toggle (e.g. dark mode switch) to update ribbon colors.
+	 */
+	public static void refreshColors() {
+		RIBBON_MENU_COLOR = NomadPlanColors.surface();
+		RIBBON_MENU_DARK_COLOR = NomadPlanColors.border();
+	}
+
 	protected int appMenuButtonWidth = 180;
 	protected int appMenuButtonHeight = 40;
 	protected int appMenuButtonXOffset = 0;
 	protected int appMenuButtonYOffset = 13;
 	protected int applicationMenuButtonOutlineMarginX = 10;
 	protected int defaultTaskbartHeight = 34;
-	protected int defaultTaskToggleButtonHeight = 32;
+	protected int defaultTaskToggleButtonHeight = 34;
 
 //	protected int projectlibre1LogoWidth = 120;
 //	protected int projectlibre1LogoHeight = 27;
 //	protected int projectlibre1LogoXOffset = 17;
 //	protected int projectlibre1LogoYOffset = 3;
 
-	protected Color background3 = RIBBON_MENU_COLOR;
-	protected Color background1 = background3;// FlamingoUtilities.getColor(Color.lightGray,"Panel.background");
-	protected Color background2 = background3;// FlamingoUtilities.getColor(Color.lightGray.brighter(),
-												// "Panel.background");
+	protected Color background3 = NomadPlanColors.background();
+	protected Color background1 = NomadPlanColors.background();
+	protected Color background2 = NomadPlanColors.background();
 
 	protected int fileSelectorOffsetX = 300;
 	
@@ -427,16 +435,8 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 	 * Installs defaults on the associated ribbon.
 	 */
 	protected void installDefaults() {
-		Border b = this.ribbon.getBorder();
-		if (b == null || b instanceof UIResource) {
-			Border toSet = UIManager.getBorder("Ribbon.border");
-			if (toSet == null)
-				toSet = new BorderUIResource.EmptyBorderUIResource(1, 2, 1, 2);
-			/*
-			 * this.ribbon.setBorder(toSet); commented out the code to remove
-			 * the Grey Line - SD
-			 */
-		}
+		refreshColors();
+		this.ribbon.setBorder(new EmptyBorder(0, 0, 0, 0));
 	}
 
 	/**
@@ -616,7 +616,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 	}
 
 	protected void paintMinimizedRibbonSeparator(Graphics g) {
-		Color borderColor = FlamingoUtilities.getBorderColor();
+		Color borderColor = NomadPlanColors.border();
 		g.setColor(borderColor);
 		Insets ins = ribbon.getInsets();
 		g.drawLine(0, ribbon.getHeight() - ins.bottom, ribbon.getWidth(),
@@ -631,27 +631,13 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 	 */
 	protected void paintBackground(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g.create();
-
-		int w=200;
-		int h=66;
-		g2d.setColor(background1);
+		// Clean flat background
+		g2d.setColor(NomadPlanColors.background());
 		g2d.fillRect(0, 0, this.ribbon.getWidth(), this.ribbon.getHeight());
-		g2d.setColor(NomadPlanColors.surface());
-		g2d.fillRect(0, 0, w, h);
-		
-		g2d.setColor(background1);
-		BasicStroke stroke = new BasicStroke(2);
-		g2d.setStroke(stroke);
-		g2d.draw(new Line2D.Double(0,64,w,64));//bottom		//-Icon BgTexture
-		g2d.draw(new Line2D.Double(0,59,w,59));//middle
-		g2d.draw(new Line2D.Double(0,53,w,53));//high
-		g2d.draw(new Line2D.Double(0,45,w,45));//pl1
-		g2d.draw(new Line2D.Double(0,33,w,33));//pl2
-		g2d.draw(new Line2D.Double(0,25,this.ribbon.getWidth(),25));//pl3
-		g2d.draw(new Line2D.Double(0,11,this.ribbon.getWidth(),11));//pl3
-		
-		
-		
+
+		// Subtle bottom border for the entire ribbon
+		g2d.setColor(NomadPlanColors.border());
+		g2d.drawLine(0, this.ribbon.getHeight() - 1, this.ribbon.getWidth(), this.ribbon.getHeight() - 1);
 
 		g2d.dispose();
 	}
@@ -702,8 +688,8 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 				+ height, 2);
 
 		Graphics2D g2d = (Graphics2D) g.create();
-		g2d.setColor(FlamingoUtilities.getBorderColor());
-		//g2d.draw(outerContour);		//borders removed	-SD		
+		g2d.setColor(NomadPlanColors.border());
+		//g2d.draw(outerContour);		//borders removed	-SD
 		g2d.drawLine(x, y, x + width, y); //claur ignoring contour but top line is needed
 
 		// check whether the currently selected task is a contextual task
@@ -1222,7 +1208,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 				g2d.setComposite(AlphaComposite.SrcOver.derive(0.6f));
 				g2d.setColor(background2);
 				g2d.fill(contour);
-				g2d.setColor(FlamingoUtilities.getBorderColor().darker());
+				g2d.setColor(NomadPlanColors.border());
 				g2d.draw(contour);
 			}
 
@@ -1333,7 +1319,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 						}
 
 						// separator lines
-						Color color = FlamingoUtilities.getBorderColor();
+						Color color = NomadPlanColors.border();
 						g2d.setPaint(new GradientPaint(0, 0, FlamingoUtilities
 								.getAlphaColor(color, 0), 0, height, color));
 						// left line
@@ -1749,7 +1735,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 
 		protected void paintTaskOutlines(Graphics g) {
 			Graphics2D g2d = (Graphics2D) g.create();
-			Color color = FlamingoUtilities.getBorderColor();
+			Color color = NomadPlanColors.border();
 			Paint paint = new GradientPaint(0, 0,
 					FlamingoUtilities.getAlphaColor(color, 0), 0, getHeight(),
 					color);
@@ -1824,7 +1810,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 		protected void paintContextualTaskGroupOutlines(Graphics g,
 				RibbonContextualTaskGroup group, Rectangle groupBounds) {
 			Graphics2D g2d = (Graphics2D) g.create();
-			Color color = FlamingoUtilities.getBorderColor();
+			Color color = NomadPlanColors.border();
 
 			Paint paint = new GradientPaint(0, groupBounds.y, color, 0,
 					groupBounds.y + groupBounds.height,
