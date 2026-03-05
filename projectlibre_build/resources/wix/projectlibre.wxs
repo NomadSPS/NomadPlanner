@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="ProjectLibre"
-		Language="1033" Version="@version@" Manufacturer="ProjectLibre"
+	<Product Id="*" Name="NomadPlan"
+		Language="1033" Version="@version@" Manufacturer="NomadPlan"
 		UpgradeCode="D8EF9CE4-1F7D-4117-B020-68B58074C08B">
 		<Package
             Platform="x64"
-            Description="ProjectLibre is an open source project management application"
+            Description="NomadPlan is an open source project management application"
 			Comments="Window Installer Package" InstallerVersion="200"
 			Compressed="yes" />
 			
@@ -16,7 +16,7 @@
 			<UpgradeVersion OnlyDetect='yes' Property='PROJECT_DOWNGRADE' Minimum='@version@' IncludeMinimum='no' />
 			<Property Id='PROJECT_DOWNGRADE' Secure='yes' />
 		</Upgrade>
-		<CustomAction Id='NoDownGrade' Error='A later version of ProjectLibre is already installed.' />
+		<CustomAction Id='NoDownGrade' Error='A later version of NomadPlan is already installed.' />
 		<InstallExecuteSequence>
 			<LaunchConditions After='AppSearch'></LaunchConditions>
 			<Custom Action='NoDownGrade' After='FindRelatedProducts'> <![CDATA[PROJECT_DOWNGRADE]]></Custom>
@@ -28,10 +28,10 @@
         <Icon Id="projectlibre.ico" SourceFile="projectlibre\msi_images\projectlibre.ico" />
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFiles64Folder">
-				<Directory Id="APPLICATIONROOTDIRECTORY" Name="ProjectLibre" />
+				<Directory Id="APPLICATIONROOTDIRECTORY" Name="NomadPlan" />
 			</Directory>
 			<Directory Id="ProgramMenuFolder">
-				<Directory Id="ApplicationProgramsFolder" Name="ProjectLibre" />
+				<Directory Id="ApplicationProgramsFolder" Name="NomadPlan" />
 			</Directory>
 
 		</Directory>
@@ -48,7 +48,7 @@
 			<Component Win64="yes" Id="PROJECTLIBRE.EXE" DiskId="1"
 				Guid="73D9D08E-FE6E-4E09-8431-92EE35066CB9">
 				<File ProcessorArchitecture='x64' Id="PROJECTLIBRE.EXE" Name="projectlibre.exe" Source="@resourcedir@\projectlibre.exe" />
-                <ProgId Id='ProjectLibrePOD' Description='ProjectLibre POD Project' Advertise="yes" Icon='projectlibre.ico'>
+                <ProgId Id='ProjectLibrePOD' Description='NomadPlan POD Project' Advertise="yes" Icon='projectlibre.ico'>
                     <Extension Id='pod' Advertise="yes">
                         <Verb Id='open' Command='Open' Argument='"%1"' Sequence="1"/>
                     </Extension>
@@ -796,8 +796,8 @@
         
         <DirectoryRef Id="ApplicationProgramsFolder">
             <Component Win64="yes" Id="ApplicationShortcut" Guid="51C5EB84-32BB-4D70-96BC-3FAE2CAB7F34">
-                <Shortcut Id="ApplicationStartMenuShortcut" Name="ProjectLibre"
-                Description="ProjectLibre is an open source project management application"
+                <Shortcut Id="ApplicationStartMenuShortcut" Name="NomadPlan"
+                Description="NomadPlan is an open source project management application"
                 Target="[APPLICATIONROOTDIRECTORY]projectlibre.exe" WorkingDirectory="APPLICATIONROOTDIRECTORY" Icon ="projectlibre.ico" Show="normal"/>
                 <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall" />
                 <RegistryValue Root="HKCU" Key="Software\Microsoft\ProjectLibre"
@@ -1046,7 +1046,7 @@
                 Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish-->
         </UI>
         
-        <!--Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch ProjectLibre" />
+        <!--Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch NomadPlan" />
         
         <Property Id="WixShellExecTarget" Value="[#PROJECTLIBRE.EXE]" />
         <CustomAction Id="LaunchApplication" Property="CA1_PROP"

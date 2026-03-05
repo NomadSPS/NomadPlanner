@@ -3,5 +3,5 @@ Encoding=UTF-8
 Type=MimeType
 MimeType=application/x-projectlibre
 Patterns=*.pod;
-Icon=projectlibre
-Comment=ProjectLibre
+Icon=nomadplan
+Comment=NomadPlan

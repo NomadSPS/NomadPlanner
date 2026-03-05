@@ -18,7 +18,7 @@ if (-not (Test-Path $OutputDir)) {
 
 & $JpackagePath `
     --type msi `
-    --name ProjectLibre `
+    --name NomadPlan `
     --app-version $AppVersion `
     --input source `
     --main-jar projectlibre-$AppVersion.jar `

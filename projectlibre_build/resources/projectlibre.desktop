@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=ProjectLibre
+Name=NomadPlan
 GenericName=Project Management
 GenericName[fr]=Gestion de projets
 GenericName[ru]=Управление проектами
@@ -65,10 +65,10 @@ GenericName[th]=การบริหารโครงการ
 GenericName[tr]=Proje Yönetimi
 GenericName[vi]=Quản lý dự án
 GenericName[uk]=Управління 
-Comment=Project scheduling and management
-Comment[ru]=Планирование и управление проектами
+Comment=NomadPlan project scheduling and management
+Comment[ru]=NomadPlan - Планирование и управление проектами
 Exec=projectlibre %F
-Icon=projectlibre
+Icon=nomadplan
 Terminal=false
 Type=Application
 Categories=Office;ProjectManagement;
