@@ -71,14 +71,19 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.graphic.configuration.shape.Colors;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.Environment;
+import java.util.prefs.Preferences;
 
 public class LafManagerImpl implements LafManager {
     protected static LookAndFeel plaf = null; // for substance
     protected static GraphicManager graphicManager;
 	private static Boolean lafOK = null;
+    private static final String PREF_DARK_MODE = "nomadplan.darkMode";
     public LafManagerImpl(GraphicManager graphicManager){
     	this.graphicManager=graphicManager;
     }
@@ -111,25 +116,59 @@ public class LafManagerImpl implements LafManager {
 	 * @see com.projectlibre1.pm.graphic.laf.LafManager1#getPlaf()
 	 */
     public LookAndFeel getPlaf() {
-    	if (plaf == null) {
-			try {
-						int os=Environment.getOs();
-						if (os==Environment.LINUX/*||os==Environment.MAC*/) //$NON-NLS-1$ //$NON-NLS-2$
-								UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel"); //$NON-NLS-1$
-								//UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
-						else {
-							UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-							plaf = UIManager.getLookAndFeel();
-							return plaf;
-						}
-		    			plaf = UIManager.getLookAndFeel();
+        if (plaf == null) {
+            try {
+                Preferences prefs = Preferences.userNodeForPackage(LafManagerImpl.class);
+                boolean dark = prefs.getBoolean(PREF_DARK_MODE, false);
+                NomadPlanColors.setDarkMode(dark);
+                if (dark) {
+                    FlatDarkLaf.setup();
+                } else {
+                    FlatLightLaf.setup();
+                }
+                applyNomadPlanDefaults();
+                plaf = UIManager.getLookAndFeel();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (graphicManager != null) SwingUtilities.updateComponentTreeUI(graphicManager.getContainer());
+        }
+        return plaf;
+    }
 
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			if (graphicManager!=null) SwingUtilities.updateComponentTreeUI(graphicManager.getContainer());
-    	}
-    	return plaf;
+    public void toggleTheme() {
+        boolean dark = !NomadPlanColors.isDarkMode();
+        NomadPlanColors.setDarkMode(dark);
+        Preferences prefs = Preferences.userNodeForPackage(LafManagerImpl.class);
+        prefs.putBoolean(PREF_DARK_MODE, dark);
+        try {
+            if (dark) {
+                FlatDarkLaf.setup();
+            } else {
+                FlatLightLaf.setup();
+            }
+            applyNomadPlanDefaults();
+            plaf = UIManager.getLookAndFeel();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (graphicManager != null) {
+            SwingUtilities.updateComponentTreeUI(graphicManager.getContainer());
+            graphicManager.getContainer().repaint();
+        }
+    }
+
+    private void applyNomadPlanDefaults() {
+        UIManager.put("Component.focusColor", NomadPlanColors.accent());
+        UIManager.put("Component.focusWidth", 1);
+        UIManager.put("Button.arc", 6);
+        UIManager.put("Component.arc", 6);
+        UIManager.put("TextComponent.arc", 6);
+        UIManager.put("ScrollBar.thumbArc", 999);
+        UIManager.put("ScrollBar.thumbInsets", new javax.swing.plaf.InsetsUIResource(2, 2, 2, 2));
+        UIManager.put("TabbedPane.selectedBackground", NomadPlanColors.background());
+        UIManager.put("TabbedPane.underlineColor", NomadPlanColors.accent());
+        UIManager.put("Table.alternateRowColor", NomadPlanColors.surface());
     }
 
     /* (non-Javadoc)
@@ -194,14 +233,10 @@ public class LafManagerImpl implements LafManager {
 
 
 	public Color getSelectedBackgroundColor() {
-		return Environment.isMac()?Colors.NOT_TOO_DARK_GRAY:Color.DARK_GRAY;
+		return NomadPlanColors.accent();
 	}
 	public Color getUnselectedBackgroundColor() {
-		LookAndFeel laf = UIManager.getLookAndFeel();
-		if (Environment.isMac())
-			return Environment.isMac()?Colors.VERY_LIGHT_GRAY:laf.getDefaults().getColor("TableHeader.background");//table.getTableHeader ().getBackground()
-		else
-			return laf.getDefaults().getColor("TableHeader.focusCellForeground");
+		return NomadPlanColors.surface();
 	}
 
 	public void dumpUIValues() {

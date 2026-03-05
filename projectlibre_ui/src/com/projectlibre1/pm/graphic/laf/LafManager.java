@@ -94,6 +94,8 @@ public interface LafManager {
 	
 	public abstract Color getUnselectedBackgroundColor();
 
+	public abstract void toggleTheme();
+
 	public abstract void dumpUIValues();
 	public boolean isToolbarOpaque();
 }
