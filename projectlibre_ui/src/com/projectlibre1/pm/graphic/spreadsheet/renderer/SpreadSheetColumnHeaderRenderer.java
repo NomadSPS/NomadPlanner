@@ -70,6 +70,7 @@ import com.projectlibre1.pm.graphic.model.cache.GraphicNode;
 import com.projectlibre1.pm.graphic.spreadsheet.SpreadSheetParams;
 import com.projectlibre1.pm.graphic.spreadsheet.common.CommonSpreadSheet;
 import com.projectlibre1.field.Field;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.Environment;
 /**
  *
@@ -104,20 +105,20 @@ public class SpreadSheetColumnHeaderRenderer extends DefaultTableCellRenderer im
 			//isSelected|=sp.getSelection().getColumnSelection().isSelectedIndex(column)&&table.getSelectedRowCount()==table.getRowCount();
 			component.setOpaque(Environment.isMac());
 			if (Environment.isNewLaf()) {
-				component.setForeground (/*table.getTableHeader().getForeground()*/Color.BLACK);
+				component.setForeground (NomadPlanColors.textPrimary());
 				component.setBackground(isSelected ? GraphicManager.getInstance().getLafManager().getSelectedBackgroundColor() : GraphicManager.getInstance().getLafManager().getUnselectedBackgroundColor());
 			} if (Environment.isMac()){
-				component.setForeground (isSelected ? Color.BLACK : table.getTableHeader().getForeground());
+				component.setForeground (isSelected ? NomadPlanColors.textPrimary() : table.getTableHeader().getForeground());
 				component.setBackground(isSelected ? GraphicManager.getInstance().getLafManager().getSelectedBackgroundColor() : GraphicManager.getInstance().getLafManager().getUnselectedBackgroundColor());
 			} else {
-				component.setForeground (isSelected ? Color.BLACK : table.getTableHeader().getForeground());
+				component.setForeground (isSelected ? NomadPlanColors.textPrimary() : table.getTableHeader().getForeground());
 				component.setBackground(isSelected ? GraphicManager.getInstance().getLafManager().getSelectedBackgroundColor() : table.getTableHeader ().getBackground());
 			}
 		}
 
 		component.setHorizontalAlignment (CENTER);
 		if (!Environment.isNewLaf()) {
-			component.setBorder(new LineBorder(Color.LIGHT_GRAY));
+			component.setBorder(new LineBorder(NomadPlanColors.border()));
 		}
 		if (override == null) {
 			if (table!=null) component.setFont (table.getTableHeader ().getFont().deriveFont(Font.BOLD ));

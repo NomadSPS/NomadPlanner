@@ -110,6 +110,7 @@ import com.projectlibre1.timescale.TimeInterval;
 import com.projectlibre1.timescale.TimeIterator;
 import com.projectlibre1.util.DateTime;
 import com.projectlibre1.util.Environment;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.FontUtil;
 
 public class GanttRenderer extends GraphRenderer implements Serializable {
@@ -273,8 +274,9 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 					if (completedW>width && !GanttOption.getInstance().isCompletionIsContiguous())
 						completedW=width;
 					completedW=CoordinatesConverter.adaptSmallBarEndX(x, x+completedW, node,config)-x;
-					Rectangle2D progressBar=new Rectangle2D.Double(x,y-config.getGanttProgressBarHeight()/2,completedW,config.getGanttProgressBarHeight());
-					g2.setColor(Color.BLACK);
+					double ph = config.getGanttProgressBarHeight();
+					java.awt.geom.RoundRectangle2D progressBar=new java.awt.geom.RoundRectangle2D.Double(x,y-ph/2,completedW,ph,Math.min(3.0,ph*0.25),Math.min(3.0,ph*0.25));
+					g2.setColor(com.projectlibre1.theme.NomadPlanColors.textPrimary());
 					g2.fill(progressBar);
 				}
 			}
@@ -562,8 +564,7 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 				long startNonworking=-1L,endNonWorking=-1L;
 				Calendar cal=DateTime.calendarInstance();
 
-				PredefinedPaint paint=(PredefinedPaint)calFormat.getMiddle().getPaint();//new PredefinedPaint(PredefinedPaint.DOT_LINE,Colors.VERY_LIGHT_GRAY,Color.WHITE);
-				paint.applyPaint(g2, useTextures());
+				g2.setColor(NomadPlanColors.ganttNonWork());
 				while (i.hasNext()){
 					TimeInterval interval=i.next();
 					long s=interval.getStart();
@@ -599,7 +600,7 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 			//project start
 			int projectStartX=(int)Math.round(coord.toX(project.getStart()));
 			if (projectStartX>=bounds.getX()&&projectStartX<=bounds.getMaxX()){
-				g2.setPaint(new PredefinedPaint(PredefinedPaint.DASH_LINE,Color.GRAY,g2.getBackground()));
+				g2.setPaint(new PredefinedPaint(PredefinedPaint.DASH_LINE,NomadPlanColors.textSecondary(),g2.getBackground()));
 				g2.drawLine(projectStartX,bounds.y,projectStartX,bounds.y+bounds.height);
 			}
 
@@ -608,7 +609,7 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 			if (statusDate != 0) {
 				int statusDateX=(int)Math.round(coord.toX(statusDate));
 				if (statusDateX>=bounds.getX()&&statusDateX<=bounds.getMaxX()){
-					g2.setPaint(new PredefinedPaint(PredefinedPaint.DOT_LINE2,Color.GREEN,g2.getBackground()));
+					g2.setPaint(new PredefinedPaint(PredefinedPaint.DOT_LINE2,NomadPlanColors.accent(),g2.getBackground()));
 					g2.drawLine(statusDateX,bounds.y,statusDateX,bounds.y+bounds.height);
 				}
 			}

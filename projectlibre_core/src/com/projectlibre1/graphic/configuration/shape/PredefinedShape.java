@@ -56,21 +56,40 @@
 package com.projectlibre1.graphic.configuration.shape;
 
 import java.awt.geom.GeneralPath;
+import java.awt.geom.RoundRectangle2D;
 import java.util.HashMap;
 
 import com.projectlibre1.util.ArrayUtils;
 
 /**
- * 
+ *
  */
 public class PredefinedShape {
 	private String name;
 	private double[][] points = null;
-	private double[][][] pointGrid = null; 
+	private double[][][] pointGrid = null;
+	private boolean rounded = false;
 
 	public GeneralPath toGeneralPath(double hScale, double vScale, double hShift, double vShift) {
 		GeneralPath path;
 		if (points != null) {
+			if (rounded && points.length == 4) {
+				// Rounded rectangle: compute bounding box from the 4 corner points
+				int x0 = Integer.MAX_VALUE, y0 = Integer.MAX_VALUE;
+				int x1 = Integer.MIN_VALUE, y1 = Integer.MIN_VALUE;
+				for (int i = 0; i < 4; i++) {
+					int px = r(hScale * points[i][0] + hShift);
+					int py = r(vScale * points[i][1] + vShift);
+					if (px < x0) x0 = px;
+					if (px > x1) x1 = px;
+					if (py < y0) y0 = py;
+					if (py > y1) y1 = py;
+				}
+				double arc = Math.min(3.0, (y1 - y0) * 0.25);
+				RoundRectangle2D rr = new RoundRectangle2D.Double(x0, y0, x1 - x0, y1 - y0, arc, arc);
+				path = new GeneralPath(rr);
+				return path;
+			}
 			path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, points.length);
 			int x, y;
 			for (int i = 0; i < points.length; i++) {
@@ -100,11 +119,15 @@ public class PredefinedShape {
 	}
 
 	protected PredefinedShape(String name, double[][] points, double hScale, double vScale, double hShift, double vShift) {
+		this(name, points, hScale, vScale, hShift, vShift, false);
+	}
+
+	protected PredefinedShape(String name, double[][] points, double hScale, double vScale, double hShift, double vShift, boolean rounded) {
 		this.name = name;
+		this.rounded = rounded;
 		this.points = ArrayUtils.clone(points);
 		scale(hScale, vScale);
 		translate(hShift, vShift);
-
 	}
 
 	protected PredefinedShape(String name, double[][] points) {
@@ -139,15 +162,15 @@ public class PredefinedShape {
 
 	private static final double rectPoints[][] = new double[][] { { 1, .5 }, { 0, .5 }, { 0, -.5 }, { 1, -.5 }};
 
-	public static final PredefinedShape FULL_HEIGHT = new PredefinedShape("FULL_HEIGHT", rectPoints);
+	public static final PredefinedShape FULL_HEIGHT = new PredefinedShape("FULL_HEIGHT", rectPoints, 1, 1, 0, 0, true);
 
-	public static final PredefinedShape HALF_HEIGHT_TOP = new PredefinedShape("HALF_HEIGHT_TOP", rectPoints, 1, .5, 0, -.25);
+	public static final PredefinedShape HALF_HEIGHT_TOP = new PredefinedShape("HALF_HEIGHT_TOP", rectPoints, 1, .5, 0, -.25, true);
 
-	public static final PredefinedShape HALF_HEIGHT_BOTTOM = new PredefinedShape("HALF_HEIGHT_BOTTOM", rectPoints, 1, .5, 0, .25);
+	public static final PredefinedShape HALF_HEIGHT_BOTTOM = new PredefinedShape("HALF_HEIGHT_BOTTOM", rectPoints, 1, .5, 0, .25, true);
 
-	public static final PredefinedShape HALF_HEIGHT_CENTER = new PredefinedShape("HALF_HEIGHT_CENTER", rectPoints, 1, .5, 0, 0);
+	public static final PredefinedShape HALF_HEIGHT_CENTER = new PredefinedShape("HALF_HEIGHT_CENTER", rectPoints, 1, .5, 0, 0, true);
 
-	public static final PredefinedShape QUARTER_HEIGHT_CENTER = new PredefinedShape("QUARTER_HEIGHT_CENTER", rectPoints, 1, .25, 0, 0);
+	public static final PredefinedShape QUARTER_HEIGHT_CENTER = new PredefinedShape("QUARTER_HEIGHT_CENTER", rectPoints, 1, .25, 0, 0, true);
 
 	public static final PredefinedShape SQUARE = new PredefinedShape("SQUARE", new double[][] { { .5, .5 }, { -.5, .5 }, { -.5, -.5 }, { .5, -.5 }
 

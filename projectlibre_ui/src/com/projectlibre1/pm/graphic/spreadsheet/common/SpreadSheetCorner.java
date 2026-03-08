@@ -93,7 +93,7 @@ public class SpreadSheetCorner extends GradientCorner implements ListSelectionLi
 //
 //		setBackground(LafUtils.getUnselectedBackgroundColor());
 		if (!Environment.isNewLaf())
-			setBorder(new LineBorder(Color.LIGHT_GRAY));
+			setBorder(new LineBorder(com.projectlibre1.theme.NomadPlanColors.border()));
 		addMouseListener(new MouseAdapter(){
 			public void mousePressed(MouseEvent e){
 				CommonSpreadSheet spreadSheet=SpreadSheetCorner.this.spreadSheet;

@@ -80,7 +80,7 @@ public class CellUtility {
 		GraphicNode node = model.getNode(row);
 		CellFormat cellFormat=model.getCellProperties(node);
 		if (isSelected){
-			component.setForeground(/*table.getSelectionForeground()*/Color.WHITE);
+			component.setForeground(table.getSelectionForeground());
 			component.setBackground(/*Color.BLACK*/GraphicManager.getInstance().getLafManager().getSelectedBackgroundColor());
 		}else{
 
@@ -91,7 +91,7 @@ public class CellUtility {
 		}
 		//component.setFont(table.getFont());
 		if (hasFocus){
-			component.setBorder( /*UIManager.getBorder("Table.focusCellHighlightBorder")*/new LineBorder(Color.BLACK) );
+			component.setBorder( new LineBorder(com.projectlibre1.theme.NomadPlanColors.border()) );
 			if (table.isCellEditable(row, column)) {
 				Color foreground=cellFormat.getForegroundObject();
 				component.setForeground((foreground==null)?UIManager.getColor("Table.focusCellForeground"):foreground );
@@ -103,7 +103,7 @@ public class CellUtility {
 //			if (!model.isRowEditable(row))
 //				component.setForeground(Color.GRAY);
 			if (!model.isCellEditable(row,column+1)){
-				component.setForeground(Color.GRAY);
+				component.setForeground(com.projectlibre1.theme.NomadPlanColors.textSecondary());
 			}
 		}
 	}
