@@ -140,7 +140,7 @@ public abstract class InformationDialog extends FieldDialog {
 
 	protected  JComponent pairedComponents(FieldComponentMap map,String fieldId,int fieldFlag,JComponent tool){
 		FormLayout layout = new FormLayout(
-		        "p:grow,0dlu,16dlu", // extra padding on right is for estimated field //$NON-NLS-1$
+		        "p:grow,3dlu,16dlu", // extra padding on right is for estimated field //$NON-NLS-1$
 				"p"); //$NON-NLS-1$
 
 		DefaultFormBuilder builder = new DefaultFormBuilder(layout);

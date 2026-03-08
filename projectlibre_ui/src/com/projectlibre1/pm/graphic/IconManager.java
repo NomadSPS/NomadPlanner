@@ -67,6 +67,8 @@ import javax.swing.ImageIcon;
 import org.pushingpixels.flamingo.api.common.icon.ImageWrapperResizableIcon;
 import org.pushingpixels.flamingo.api.common.icon.ResizableIcon;
 
+import com.projectlibre1.theme.ModernIcons;
+import com.projectlibre1.theme.VectorResizableIcon;
 import com.projectlibre1.util.ClassLoaderUtils;
 
 /**
@@ -100,17 +102,43 @@ public class IconManager {
 	}
 
 	public static URL getURL(String key) {
-		ResourceBundle bundle = ResourceBundle
-				.getBundle("com/projectlibre1/pm/graphic/images",Locale.getDefault(),classLoader);
-		String iconName = bundle.getString(key);
-		if (iconName == null)
+		try {
+			ResourceBundle bundle = ResourceBundle
+					.getBundle("com/projectlibre1/pm/graphic/images",Locale.getDefault(),classLoader);
+			String iconName = bundle.getString(key);
+			if (iconName == null)
+				return null;
+			return getIconResource(iconName);
+		} catch (java.util.MissingResourceException e) {
 			return null;
-		return getIconResource(iconName);
+		}
 	}
 	
 	public static ImageIcon getIcon(String key) {
 		ImageIcon icon = (ImageIcon) icons.get(key);
 		if (icon == null) {
+			// Try modern vector icon first — render 1x and 2x for HiDPI
+			if (ModernIcons.hasIcon(key)) {
+				int size = 24;
+				java.awt.image.BufferedImage img1x = new java.awt.image.BufferedImage(
+						size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+				java.awt.Graphics2D g1 = img1x.createGraphics();
+				ModernIcons.getPainter(key).paint(g1, size, size);
+				g1.dispose();
+
+				int size2x = size * 2;
+				java.awt.image.BufferedImage img2x = new java.awt.image.BufferedImage(
+						size2x, size2x, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+				java.awt.Graphics2D g2 = img2x.createGraphics();
+				ModernIcons.getPainter(key).paint(g2, size2x, size2x);
+				g2.dispose();
+
+				java.awt.image.BaseMultiResolutionImage mrImage =
+						new java.awt.image.BaseMultiResolutionImage(img1x, img2x);
+				icon = new ImageIcon(mrImage);
+				icons.put(key, icon);
+				return icon;
+			}
 			URL url = getURL(key);
 			if (url == null)
 				return null;
@@ -123,16 +151,15 @@ public class IconManager {
 		return getRibbonIcon(key,48,48);
 	}
 	public static ResizableIcon getRibbonIcon(String name, int width , int height) {
-//		String key=name+"-"+width+"-"+height;
-//		ResizableIcon icon = (ResizableIcon) ribbonIcons.get(key); //don't store
+		// Use modern vector icons when available
+		if (ModernIcons.hasIcon(name)) {
+			return new VectorResizableIcon(ModernIcons.getPainter(name), width, height);
+		}
 		ResizableIcon icon=null;
-//		if (icon == null) {
-			URL url = getURL(name);
-			if (url == null)
-				return null;
-			icon = ImageWrapperResizableIcon.getIcon(url, new Dimension(width, height));
-//			ribbonIcons.put(key, icon);
-//		}
+		URL url = getURL(name);
+		if (url == null)
+			return null;
+		icon = ImageWrapperResizableIcon.getIcon(url, new Dimension(width, height));
 		return icon;
 	}
 

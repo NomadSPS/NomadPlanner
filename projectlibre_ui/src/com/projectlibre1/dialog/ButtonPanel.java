@@ -65,8 +65,8 @@ import javax.swing.plaf.basic.BasicOptionPaneUI;
 public class ButtonPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	public ButtonPanel() {
-	    super(new BasicOptionPaneUI.ButtonAreaLayout(true, 6));
-	    setBorder(BorderFactory.createEmptyBorder(9, 0, 0, 0));
+	    super(new BasicOptionPaneUI.ButtonAreaLayout(true, 8));
+	    setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0));
 	}
 	public void addButton(JButton button) {
 		add(button);

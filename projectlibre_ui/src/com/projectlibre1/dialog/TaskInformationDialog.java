@@ -373,7 +373,7 @@ public class TaskInformationDialog extends InformationDialog {
 	public JComponent createResourcesPanel() {
 		FieldComponentMap map = createMap();
 		
-		FormLayout layout = new FormLayout("p:grow,0dlu,right:p","p,3dlu,p,3dlu,fill:150dlu:grow"); //$NON-NLS-1$ //$NON-NLS-2$
+		FormLayout layout = new FormLayout("p:grow,3dlu,right:p","p,3dlu,p,3dlu,fill:150dlu:grow"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		DefaultFormBuilder builder = new DefaultFormBuilder(layout);
 		builder.setDefaultDialogBorder();

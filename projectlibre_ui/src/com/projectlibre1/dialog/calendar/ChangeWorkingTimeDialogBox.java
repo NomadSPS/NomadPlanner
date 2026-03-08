@@ -609,7 +609,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 
 	private JComponent createSettingsPanel() {
 		FormLayout settingsLayout = new FormLayout("100dlu", //$NON-NLS-1$
-		"p,0dlu ,p,3dlu ,p,3dlu p,3dlu,p,0dlu ,p,0dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p"); //$NON-NLS-1$
+		"p,3dlu ,p,3dlu ,p,3dlu p,3dlu,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p,3dlu ,p"); //$NON-NLS-1$
 		DefaultFormBuilder settingBuilder = new DefaultFormBuilder(settingsLayout);
 
 		settingBuilder.addLabel(Messages.getString("ChangeWorkingTimeDialogBox.For")); //$NON-NLS-1$
