@@ -112,8 +112,10 @@ public class FormComponent extends JPanel{
 		else format=(BarFormat)selectedFormats.get(0);
 		init(format);
 		setOpaque(false);
-		setForeground(Color.BLACK);
-		setBackground(Color.WHITE);
+		setForeground(javax.swing.UIManager.getColor("Table.foreground") != null
+			? javax.swing.UIManager.getColor("Table.foreground") : Color.BLACK);
+		setBackground(javax.swing.UIManager.getColor("Table.background") != null
+			? javax.swing.UIManager.getColor("Table.background") : Color.WHITE);
 	}
 	
 	

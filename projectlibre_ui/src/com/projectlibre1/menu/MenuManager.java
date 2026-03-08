@@ -177,9 +177,13 @@ public class MenuManager {
     	}
     }
 
+	private static final java.util.Set<String> RIBBON_ONLY_ITEMS = java.util.Set.of(
+		"ProjectLibre", "Palette", "LookAndFeel", "FullScreen", "Refresh"
+	);
+
 	public String getActionStringFromId(String id) {
 		String result = menuFactory.getActionStringFromId(id);
-		if (result == null)
+		if (result == null && !RIBBON_ONLY_ITEMS.contains(id))
 			System.out.println("Invalid item: " + id + " it must be a menu item in the menu properties, even if it's only shown in a toolbar");
 		return result;
 	}

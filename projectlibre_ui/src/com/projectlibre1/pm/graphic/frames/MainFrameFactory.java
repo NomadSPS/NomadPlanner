@@ -70,7 +70,7 @@ public class MainFrameFactory {
 		return mainFrame;
 	}
 	public static Frame creareMainFrame(String name, String projectUrl, String server) throws HeadlessException {
-			mainFrame=Environment.isRibbonUI()? new MainRibbonFrame(name, projectUrl, server): new MainFrame(name, projectUrl, server);
+			mainFrame=Environment.isRibbonUI()? new MainRibbonFrame(name, projectUrl, server): new ModernMainFrame(name, projectUrl, server);
 			return mainFrame;
 	}
 }

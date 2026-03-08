@@ -163,14 +163,40 @@ public class LafManagerImpl implements LafManager {
     private void applyNomadPlanDefaults() {
         UIManager.put("Component.focusColor", NomadPlanColors.accent());
         UIManager.put("Component.focusWidth", 1);
-        UIManager.put("Button.arc", 6);
-        UIManager.put("Component.arc", 6);
-        UIManager.put("TextComponent.arc", 6);
+        UIManager.put("Button.arc", 8);
+        UIManager.put("Component.arc", 8);
+        UIManager.put("TextComponent.arc", 8);
         UIManager.put("ScrollBar.thumbArc", 999);
         UIManager.put("ScrollBar.thumbInsets", new javax.swing.plaf.InsetsUIResource(2, 2, 2, 2));
         UIManager.put("TabbedPane.selectedBackground", NomadPlanColors.background());
         UIManager.put("TabbedPane.underlineColor", NomadPlanColors.accent());
+
+        // Table modernization: taller rows, horizontal lines only, alternating colors
+        UIManager.put("Table.rowHeight", 28);
+        UIManager.put("Table.showHorizontalLines", true);
+        UIManager.put("Table.showVerticalLines", false);
+        UIManager.put("Table.intercellSpacing", new java.awt.Dimension(0, 1));
         UIManager.put("Table.alternateRowColor", NomadPlanColors.surface());
+        UIManager.put("TableHeader.separatorColor", NomadPlanColors.border());
+        UIManager.put("TableHeader.bottomSeparatorColor", NomadPlanColors.border());
+
+        // Clean toolbar appearance
+        UIManager.put("ToolBar.separatorColor", NomadPlanColors.border());
+        UIManager.put("ToolBar.borderColor", NomadPlanColors.border());
+
+        // Slightly larger default font for readability
+        java.awt.Font defaultFont = UIManager.getFont("defaultFont");
+        if (defaultFont != null && defaultFont.getSize() < 13) {
+            UIManager.put("defaultFont", defaultFont.deriveFont(13f));
+        }
+
+        // Ribbon band inner padding — more breathing room
+        UIManager.put("RibbonBand.border",
+                new javax.swing.border.EmptyBorder(4, 6, 2, 6));
+
+        // Subtle selection colors
+        UIManager.put("List.selectionBackground", NomadPlanColors.accent());
+        UIManager.put("Tree.selectionBackground", NomadPlanColors.accent());
     }
 
     /* (non-Javadoc)

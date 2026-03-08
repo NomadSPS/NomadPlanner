@@ -224,7 +224,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 	protected int appMenuButtonYOffset = 13;
 	protected int applicationMenuButtonOutlineMarginX = 10;
 	protected int defaultTaskbartHeight = 34;
-	protected int defaultTaskToggleButtonHeight = 34;
+	protected int defaultTaskToggleButtonHeight = 38;
 
 //	protected int projectlibre1LogoWidth = 120;
 //	protected int projectlibre1LogoHeight = 27;
@@ -631,13 +631,26 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 	 */
 	protected void paintBackground(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g.create();
-		// Clean flat background
-		g2d.setColor(NomadPlanColors.background());
-		g2d.fillRect(0, 0, this.ribbon.getWidth(), this.ribbon.getHeight());
+		int w = this.ribbon.getWidth();
+		int h = this.ribbon.getHeight();
 
-		// Subtle bottom border for the entire ribbon
+		// Ribbon band area uses surface color — visually distinct from white content area
+		g2d.setColor(NomadPlanColors.surface());
+		g2d.fillRect(0, 0, w, h);
+
+		// Tab strip area gets a slightly darker tint for visual separation
+		int tabStripHeight = getTaskbarHeight() + getTaskToggleButtonHeight();
+		if (!isUsingTitlePane()) {
+			g2d.setColor(NomadPlanColors.border());
+			// Subtle darkening: mix border color at low opacity over the surface
+			g2d.setComposite(AlphaComposite.SrcOver.derive(0.15f));
+			g2d.fillRect(0, 0, w, tabStripHeight);
+			g2d.setComposite(AlphaComposite.SrcOver);
+		}
+
+		// Prominent 1px bottom separator line below ribbon
 		g2d.setColor(NomadPlanColors.border());
-		g2d.drawLine(0, this.ribbon.getHeight() - 1, this.ribbon.getWidth(), this.ribbon.getHeight() - 1);
+		g2d.drawLine(0, h - 1, w, h - 1);
 
 		g2d.dispose();
 	}
@@ -688,9 +701,11 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 				+ height, 2);
 
 		Graphics2D g2d = (Graphics2D) g.create();
+		// Subtle separator between tabs and band content
 		g2d.setColor(NomadPlanColors.border());
-		//g2d.draw(outerContour);		//borders removed	-SD
-		g2d.drawLine(x, y, x + width, y); //claur ignoring contour but top line is needed
+		g2d.setComposite(AlphaComposite.SrcOver.derive(0.3f));
+		g2d.drawLine(x, y, x + width, y);
+		g2d.setComposite(AlphaComposite.SrcOver);
 
 		// check whether the currently selected task is a contextual task
 		RibbonTask selected = this.ribbon.getSelectedTask();
@@ -1197,20 +1212,14 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 		 */
 		@Override
 		protected void paintComponent(Graphics g) {
-			Shape contour = getOutline(this);
-
 			Graphics2D g2d = (Graphics2D) g.create();
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 					RenderingHints.VALUE_ANTIALIAS_ON);
 			RenderingUtils.installDesktopHints(g2d);
 
-			if (contour != null) {
-				g2d.setComposite(AlphaComposite.SrcOver.derive(0.6f));
-				g2d.setColor(background2);
-				g2d.fill(contour);
-				g2d.setColor(NomadPlanColors.border());
-				g2d.draw(contour);
-			}
+			// Flat background only — no contour/alpha painting
+			g2d.setColor(NomadPlanColors.background());
+			g2d.fillRect(0, 0, getWidth(), getHeight());
 
 			boolean ltr = getComponentOrientation().isLeftToRight();
 			int maxX = 0;
@@ -1241,10 +1250,8 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 				g2d.drawLine(0, height - 1, minX, height - 1);
 			}
 
-			int contourMaxX = (contour != null) ? (int) contour.getBounds2D()
-					.getMaxX() + 6 : 6;
-			int contourMinX = (contour != null) ? (int) contour.getBounds2D()
-					.getMinX() - 6 : 6;
+			int contourMaxX = 6;
+			int contourMinX = 6;
 
 			// contextual task group headers
 			if (!isShowingScrollsForTaskToggleButtons()) {
@@ -1319,9 +1326,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 						}
 
 						// separator lines
-						Color color = NomadPlanColors.border();
-						g2d.setPaint(new GradientPaint(0, 0, FlamingoUtilities
-								.getAlphaColor(color, 0), 0, height, color));
+						g2d.setColor(NomadPlanColors.border());
 						// left line
 						g2d.drawLine(startX, 0, startX, height);
 						// right line
@@ -1446,6 +1451,23 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 	}
 
 	protected static class BandHostPanel extends JPanel {
+		@Override
+		protected void paintChildren(Graphics g) {
+			super.paintChildren(g);
+			// Paint subtle vertical separator lines between adjacent ribbon bands
+			Graphics2D g2d = (Graphics2D) g.create();
+			g2d.setColor(NomadPlanColors.border());
+			g2d.setComposite(AlphaComposite.SrcOver.derive(0.4f));
+			Component[] children = getComponents();
+			for (int i = 0; i < children.length - 1; i++) {
+				if (children[i].isVisible() && children[i + 1].isVisible()) {
+					int x = children[i].getX() + children[i].getWidth()
+							+ (children[i + 1].getX() - children[i].getX() - children[i].getWidth()) / 2;
+					g2d.drawLine(x, 8, x, getHeight() - 8);
+				}
+			}
+			g2d.dispose();
+		}
 	}
 
 	/**
@@ -1735,11 +1757,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 
 		protected void paintTaskOutlines(Graphics g) {
 			Graphics2D g2d = (Graphics2D) g.create();
-			Color color = NomadPlanColors.border();
-			Paint paint = new GradientPaint(0, 0,
-					FlamingoUtilities.getAlphaColor(color, 0), 0, getHeight(),
-					color);
-			g2d.setPaint(paint);
+			g2d.setColor(NomadPlanColors.border());
 
 			Set<RibbonTask> tasksWithTrailingSeparators = new HashSet<RibbonTask>();
 			// add all regular tasks except the last
@@ -1810,12 +1828,7 @@ public class ProjectLibreRibbonUI extends RibbonUI {
 		protected void paintContextualTaskGroupOutlines(Graphics g,
 				RibbonContextualTaskGroup group, Rectangle groupBounds) {
 			Graphics2D g2d = (Graphics2D) g.create();
-			Color color = NomadPlanColors.border();
-
-			Paint paint = new GradientPaint(0, groupBounds.y, color, 0,
-					groupBounds.y + groupBounds.height,
-					FlamingoUtilities.getAlphaColor(color, 0));
-			g2d.setPaint(paint);
+			g2d.setColor(NomadPlanColors.border());
 			// left line
 			int x = groupBounds.x;
 			g2d.drawLine(x, groupBounds.y, x, groupBounds.y

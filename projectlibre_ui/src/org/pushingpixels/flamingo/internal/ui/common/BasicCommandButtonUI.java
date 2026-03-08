@@ -52,6 +52,8 @@ import org.pushingpixels.flamingo.api.common.model.PopupButtonModel;
 import org.pushingpixels.flamingo.api.common.popup.*;
 import org.pushingpixels.flamingo.internal.utils.*;
 
+import com.projectlibre1.theme.NomadPlanColors;
+
 /**
  * Basic UI for command button {@link JCommandButton}.
  * 
@@ -214,8 +216,8 @@ public class BasicCommandButtonUI extends CommandButtonUI {
 	protected void updateBorder() {
 		Border currBorder = this.commandButton.getBorder();
 		if ((currBorder == null) || (currBorder instanceof UIResource)) {
-			int tb = (int) (this.commandButton.getVGapScaleFactor() * 4);
-			int lr = (int) (this.commandButton.getHGapScaleFactor() * 6);
+			int tb = (int) (this.commandButton.getVGapScaleFactor() * 6);
+			int lr = (int) (this.commandButton.getHGapScaleFactor() * 8);
 			this.commandButton
 					.setBorder(new BorderUIResource.EmptyBorderUIResource(tb,
 							lr, tb, lr));
@@ -624,10 +626,14 @@ public class BasicCommandButtonUI extends CommandButtonUI {
 
 	protected Color getForegroundColor(boolean isTextPaintedEnabled) {
 		if (isTextPaintedEnabled) {
-			return FlamingoUtilities.getColor(Color.black, "Button.foreground");
+			// If selected, use white text on accent background
+			boolean isSelected = this.commandButton.getActionModel().isSelected();
+			if (isSelected) {
+				return Color.WHITE;
+			}
+			return NomadPlanColors.textPrimary();
 		} else {
-			return FlamingoUtilities.getColor(Color.gray,
-					"Label.disabledForeground");
+			return NomadPlanColors.textSecondary();
 		}
 	}
 
@@ -728,41 +734,32 @@ public class BasicCommandButtonUI extends CommandButtonUI {
 				.getPopupModel()
 				: null;
 
-		// first time - paint the full background passing both models
-		this.paintButtonBackground(graphics, toFill, actionModel, popupModel);
+		boolean isPressed = actionModel.isPressed()
+				|| (popupModel != null && popupModel.isPressed());
+		boolean isRollover = actionModel.isRollover()
+				|| (popupModel != null && popupModel.isRollover())
+				|| (popupModel != null && popupModel.isPopupShowing());
+		boolean isSelected = actionModel.isSelected();
 
-		Rectangle actionArea = this.getLayoutInfo().actionClickArea;
-		Rectangle popupArea = this.getLayoutInfo().popupClickArea;
-		if ((actionArea != null) && !actionArea.isEmpty()) {
-			// now overlay the action area with the background matching action
-			// model
-			Graphics2D graphicsAction = (Graphics2D) graphics.create();
-			// System.out.println(actionArea);
-			graphicsAction.clip(actionArea);
-			float actionAlpha = 0.4f;
-			if ((popupModel != null) && !popupModel.isEnabled())
-				actionAlpha = 1.0f;
-			graphicsAction.setComposite(AlphaComposite.SrcOver
-					.derive(actionAlpha));
-			// System.out.println(graphicsAction.getClipBounds());
-			this.paintButtonBackground(graphicsAction, toFill, actionModel);
-			graphicsAction.dispose();
+		Graphics2D g2d = (Graphics2D) graphics.create();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_ON);
+
+		if (isSelected) {
+			g2d.setColor(NomadPlanColors.accent());
+			g2d.fillRoundRect(toFill.x + 1, toFill.y + 1,
+					toFill.width - 2, toFill.height - 2, 6, 6);
+		} else if (isPressed) {
+			g2d.setColor(NomadPlanColors.border());
+			g2d.fillRoundRect(toFill.x + 1, toFill.y + 1,
+					toFill.width - 2, toFill.height - 2, 6, 6);
+		} else if (isRollover) {
+			g2d.setColor(NomadPlanColors.surface());
+			g2d.fillRoundRect(toFill.x + 1, toFill.y + 1,
+					toFill.width - 2, toFill.height - 2, 6, 6);
 		}
-		if ((popupArea != null) && !popupArea.isEmpty()) {
-			// now overlay the popup area with the background matching popup
-			// model
-			Graphics2D graphicsPopup = (Graphics2D) graphics.create();
-			// System.out.println(popupArea);
-			graphicsPopup.clip(popupArea);
-			// System.out.println(graphicsPopup.getClipBounds());
-			float popupAlpha = 0.4f;
-			if (!actionModel.isEnabled())
-				popupAlpha = 1.0f;
-			graphicsPopup.setComposite(AlphaComposite.SrcOver
-					.derive(popupAlpha));
-			this.paintButtonBackground(graphicsPopup, toFill, popupModel);
-			graphicsPopup.dispose();
-		}
+		// Default state: transparent (no paint)
+		g2d.dispose();
 	}
 
 	/**
@@ -782,13 +779,9 @@ public class BasicCommandButtonUI extends CommandButtonUI {
 		if ((modelToUse.length == 1) && (modelToUse[0] == null))
 			return;
 
-		this.buttonRendererPane.setBounds(toFill.x, toFill.y, toFill.width,
-				toFill.height);
-		this.rendererButton.setRolloverEnabled(true);
 		boolean isEnabled = true;
 		boolean isRollover = false;
 		boolean isPressed = true;
-		boolean isArmed = true;
 		boolean isSelected = true;
 		for (ButtonModel model : modelToUse) {
 			if (model == null)
@@ -796,141 +789,29 @@ public class BasicCommandButtonUI extends CommandButtonUI {
 			isEnabled = isEnabled && model.isEnabled();
 			isRollover = isRollover || model.isRollover();
 			isPressed = isPressed && model.isPressed();
-			isArmed = isArmed && model.isArmed();
 			isSelected = isSelected && model.isSelected();
 			if (model instanceof PopupButtonModel) {
 				isRollover = isRollover
 						|| ((PopupButtonModel) model).isPopupShowing();
 			}
 		}
-		this.rendererButton.getModel().setEnabled(isEnabled);
-		this.rendererButton.getModel().setRollover(isRollover);
-		this.rendererButton.getModel().setPressed(isPressed);
-		this.rendererButton.getModel().setArmed(isArmed);
-		this.rendererButton.getModel().setSelected(isSelected);
-		// System.out.println(this.commandButton.getText() + " - e:"
-		// + this.rendererButton.getModel().isEnabled() + ", s:"
-		// + this.rendererButton.getModel().isSelected() + ", r:"
-		// + this.rendererButton.getModel().isRollover() + ", p:"
-		// + this.rendererButton.getModel().isPressed() + ", a:"
-		// + this.rendererButton.getModel().isArmed());
-		Graphics2D g2d = (Graphics2D) graphics.create();
 
-		Color borderColor = FlamingoUtilities.getBorderColor();
-		if (Boolean.TRUE.equals(this.commandButton
-				.getClientProperty(EMULATE_SQUARE_BUTTON))) {
-			this.buttonRendererPane.paintComponent(g2d, this.rendererButton,
-					this.commandButton, toFill.x - toFill.width / 2, toFill.y
-							- toFill.height / 2, 2 * toFill.width,
-					2 * toFill.height, true);
-			g2d.setColor(borderColor);
-			g2d.drawRect(toFill.x, toFill.y, toFill.width - 1,
-					toFill.height - 1);
-		} else {
-			AbstractCommandButton.CommandButtonLocationOrderKind locationKind = this.commandButton
-					.getLocationOrderKind();
-			Insets outsets = (this.rendererButton instanceof JToggleButton) ? ButtonSizingUtils
-					.getInstance().getToggleOutsets()
-					: ButtonSizingUtils.getInstance().getOutsets();
-			if (locationKind != null) {
-				if (locationKind == AbstractCommandButton.CommandButtonLocationOrderKind.ONLY) {
-					this.buttonRendererPane.paintComponent(g2d,
-							this.rendererButton, this.commandButton, toFill.x
-									- outsets.left, toFill.y - outsets.top,
-							toFill.width + outsets.left + outsets.right,
-							toFill.height + outsets.top + outsets.bottom, true);
-				} else {
-					// special case for parent component which is a vertical
-					// button strip
-					Component parent = this.commandButton.getParent();
-					if ((parent instanceof JCommandButtonStrip)
-							&& (((JCommandButtonStrip) parent).getOrientation() == StripOrientation.VERTICAL)) {
-						switch (locationKind) {
-						case FIRST:
-							this.buttonRendererPane.paintComponent(g2d,
-									this.rendererButton, this.commandButton,
-									toFill.x - outsets.left, toFill.y
-											- outsets.top, toFill.width
-											+ outsets.left + outsets.right,
-									2 * toFill.height, true);
-							g2d.setColor(borderColor);
-							g2d.drawLine(toFill.x + 1, toFill.y + toFill.height
-									- 1, toFill.x + toFill.width - 2, toFill.y
-									+ toFill.height - 1);
-							break;
-						case LAST:
-							this.buttonRendererPane.paintComponent(g2d,
-									this.rendererButton, this.commandButton,
-									toFill.x - outsets.left, toFill.y
-											- toFill.height, toFill.width
-											+ outsets.left + outsets.right, 2
-											* toFill.height + outsets.bottom,
-									true);
-							break;
-						case MIDDLE:
-							this.buttonRendererPane.paintComponent(g2d,
-									this.rendererButton, this.commandButton,
-									toFill.x - outsets.left, toFill.y
-											- toFill.height, toFill.width
-											+ outsets.left + outsets.right,
-									3 * toFill.height, true);
-							g2d.setColor(borderColor);
-							g2d.drawLine(toFill.x + 1, toFill.y + toFill.height
-									- 1, toFill.x + toFill.width - 2, toFill.y
-									+ toFill.height - 1);
-						}
-					} else {
-						// horizontal
-						boolean ltr = this.commandButton
-								.getComponentOrientation().isLeftToRight();
-						if (locationKind == AbstractCommandButton.CommandButtonLocationOrderKind.MIDDLE) {
-							this.buttonRendererPane.paintComponent(g2d,
-									this.rendererButton, this.commandButton,
-									toFill.x - toFill.width, toFill.y
-											- outsets.top, 3 * toFill.width,
-									toFill.height + outsets.top
-											+ outsets.bottom, true);
-							g2d.setColor(borderColor);
-							g2d.drawLine(toFill.x + toFill.width - 1,
-									toFill.y + 1, toFill.x + toFill.width - 1,
-									toFill.y + toFill.height - 2);
-						} else {
-							boolean curveOnLeft = (ltr && (locationKind == AbstractCommandButton.CommandButtonLocationOrderKind.FIRST))
-									|| (!ltr && (locationKind == AbstractCommandButton.CommandButtonLocationOrderKind.LAST));
-							if (curveOnLeft) {
-								this.buttonRendererPane.paintComponent(g2d,
-										this.rendererButton,
-										this.commandButton, toFill.x
-												- outsets.left, toFill.y
-												- outsets.top,
-										2 * toFill.width, toFill.height
-												+ outsets.top + outsets.bottom,
-										true);
-								g2d.setColor(borderColor);
-								g2d.drawLine(toFill.x + toFill.width - 1,
-										toFill.y + 1, toFill.x + toFill.width
-												- 1, toFill.y + toFill.height
-												- 2);
-							} else {
-								this.buttonRendererPane.paintComponent(g2d,
-										this.rendererButton,
-										this.commandButton, toFill.x
-												- toFill.width, toFill.y
-												- outsets.top, 2 * toFill.width
-												+ outsets.right, toFill.height
-												+ outsets.top + outsets.bottom,
-										true);
-							}
-						}
-					}
-				}
-			} else {
-				this.buttonRendererPane.paintComponent(g2d,
-						this.rendererButton, this.commandButton, toFill.x
-								- outsets.left, toFill.y - outsets.top,
-						toFill.width + outsets.left + outsets.right,
-						toFill.height + outsets.top + outsets.bottom, true);
-			}
+		Graphics2D g2d = (Graphics2D) graphics.create();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_ON);
+
+		if (isSelected) {
+			g2d.setColor(NomadPlanColors.accent());
+			g2d.fillRoundRect(toFill.x + 1, toFill.y + 1,
+					toFill.width - 2, toFill.height - 2, 6, 6);
+		} else if (isPressed) {
+			g2d.setColor(NomadPlanColors.border());
+			g2d.fillRoundRect(toFill.x + 1, toFill.y + 1,
+					toFill.width - 2, toFill.height - 2, 6, 6);
+		} else if (isRollover) {
+			g2d.setColor(NomadPlanColors.surface());
+			g2d.fillRoundRect(toFill.x + 1, toFill.y + 1,
+					toFill.width - 2, toFill.height - 2, 6, 6);
 		}
 		g2d.dispose();
 	}

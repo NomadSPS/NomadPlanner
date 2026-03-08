@@ -52,6 +52,8 @@ import org.pushingpixels.flamingo.internal.utils.RenderingUtils;
 import org.pushingpixels.trident.Timeline;
 import org.pushingpixels.trident.swing.SwingRepaintCallback;
 
+import com.projectlibre1.theme.NomadPlanColors;
+
 /**
  * Basic UI for ribbon band {@link JRibbonBand}.
  * 
@@ -209,8 +211,8 @@ public class BasicRibbonBandUI extends RibbonBandUI {
 		if (b == null || b instanceof UIResource) {
 			Border toSet = UIManager.getBorder("RibbonBand.border");
 			if (toSet == null)
-				toSet = new BorderUIResource(new RoundBorder(FlamingoUtilities
-						.getBorderColor(), new Insets(2, 2, 2, 2)));
+				toSet = new BorderUIResource(new RoundBorder(
+						NomadPlanColors.border(), new Insets(2, 2, 2, 2)));
 			this.ribbonBand.setBorder(toSet);
 		}
 	}
@@ -805,23 +807,27 @@ public class BasicRibbonBandUI extends RibbonBandUI {
 			return;
 
 		Graphics2D graphics = (Graphics2D) g.create();
-		graphics.setFont(FlamingoUtilities.getFont(this.ribbonBand,
-				"Ribbon.font", "Button.font", "Panel.font"));
+		Font baseFont = FlamingoUtilities.getFont(this.ribbonBand,
+				"Ribbon.font", "Button.font", "Panel.font");
+		// Band title uses smaller, uppercase text for a clean modern look
+		Font titleFont = baseFont.deriveFont(Font.PLAIN, baseFont.getSize2D() - 2f);
+		graphics.setFont(titleFont);
 
 		FontMetrics fm = graphics.getFontMetrics();
+		String upperTitle = title.toUpperCase();
 		int y = titleRectangle.y - 2 + (titleRectangle.height + fm.getAscent())
 				/ 2;
 
-		int currLength = (int) fm.getStringBounds(title, g).getWidth();
-		String titleToPaint = title;
+		int currLength = (int) fm.getStringBounds(upperTitle, g).getWidth();
+		String titleToPaint = upperTitle;
 		while (currLength > titleRectangle.width) {
-			title = title.substring(0, title.length() - 1);
-			titleToPaint = title + "...";
+			upperTitle = upperTitle.substring(0, upperTitle.length() - 1);
+			titleToPaint = upperTitle + "...";
 			currLength = (int) fm.getStringBounds(titleToPaint, g).getWidth();
 		}
 
 		int x = titleRectangle.x + (titleRectangle.width - currLength) / 2;
-		graphics.setColor(this.ribbonBand.getForeground());
+		graphics.setColor(NomadPlanColors.textSecondary());
 		graphics.drawString(titleToPaint, x, y);
 		graphics.dispose();
 	}
@@ -838,15 +844,8 @@ public class BasicRibbonBandUI extends RibbonBandUI {
 	 */
 	protected void paintBandTitleBackground(Graphics g,
 			Rectangle titleRectangle, String title) {
-
-		Graphics2D g2d = (Graphics2D) g.create();
-		g2d.setComposite(AlphaComposite.SrcOver
-				.derive(0.7f + 0.3f * this.rolloverAmount));
-
-		FlamingoUtilities.renderSurface(g2d, this.ribbonBand, titleRectangle,
-				this.rolloverAmount > 0.0f, true, false);
-
-		g2d.dispose();
+		// Minimal title background — no fill, no border line
+		// The band title text alone provides the grouping label
 	}
 
 	public void setRolloverAmount(float rolloverAmount) {
@@ -881,10 +880,10 @@ public class BasicRibbonBandUI extends RibbonBandUI {
 		Font font = FlamingoUtilities.getFont(this.ribbonBand, "Ribbon.font",
 				"Button.font", "Panel.font");
 		if (font == null) {
-			// Nimbus - is that you?
 			font = new JLabel().getFont();
 		}
-		int result = font.getSize() + 5;
+		// Compact title bar — just enough for the label text
+		int result = font.getSize() + 3;
 		if (result % 2 == 0)
 			result++;
 		return result;

@@ -48,6 +48,8 @@ import org.pushingpixels.flamingo.internal.ui.ribbon.AbstractBandControlPanel;
 import org.pushingpixels.flamingo.internal.ui.ribbon.JRibbonTaskToggleButton;
 import org.pushingpixels.flamingo.internal.ui.ribbon.appmenu.JRibbonApplicationMenuButton;
 
+import com.projectlibre1.theme.NomadPlanColors;
+
 /**
  * Helper utilities for Flamingo project. This class is for internal use only.
  * 
@@ -465,18 +467,12 @@ public class FlamingoUtilities {
 	public static void renderSurface(Graphics g, Container c, Rectangle rect,
 			boolean toSimulateRollover, boolean hasTopBorder,
 			boolean hasBottomBorder) {
-		CellRendererPane buttonRendererPane = new CellRendererPane();
-		JButton rendererButton = new JButton("");
-		rendererButton.getModel().setRollover(toSimulateRollover);
-
-		buttonRendererPane.setBounds(rect.x, rect.y, rect.width, rect.height);
 		Graphics2D g2d = (Graphics2D) g.create();
 		g2d.clipRect(rect.x, rect.y, rect.width, rect.height);
-		buttonRendererPane.paintComponent(g2d, rendererButton, c, rect.x
-				- rect.width / 2, rect.y - rect.height / 2, 2 * rect.width,
-				2 * rect.height, true);
+		g2d.setColor(NomadPlanColors.surface());
+		g2d.fillRect(rect.x, rect.y, rect.width, rect.height);
 
-		g2d.setColor(FlamingoUtilities.getBorderColor());
+		g2d.setColor(NomadPlanColors.border());
 		if (hasTopBorder) {
 			g2d.drawLine(rect.x, rect.y, rect.x + rect.width - 1, rect.y);
 		}
@@ -505,9 +501,7 @@ public class FlamingoUtilities {
 	}
 
 	public static Color getBorderColor() {
-		return FlamingoUtilities.getColor(Color.gray,
-				"TextField.inactiveForeground", "Button.disabledText",
-				"ComboBox.disabledForeground");
+		return NomadPlanColors.border();
 	}
 
 	public static boolean isShowingMinimizedRibbonInPopup(JRibbon ribbon) {

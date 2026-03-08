@@ -58,7 +58,7 @@ package com.projectlibre1.pm.graphic.graph;
 import java.awt.Component;
 
 import javax.swing.JPopupMenu;
-import javax.swing.border.BevelBorder;
+import javax.swing.BorderFactory;
 
 
 /**
@@ -70,7 +70,7 @@ public abstract class GraphPopupMenu extends JPopupMenu{
     public GraphPopupMenu(final GraphInteractor interactor) {
         super();
         this.interactor = interactor;
-        setBorder(new BevelBorder(BevelBorder.RAISED));
+        setBorder(BorderFactory.createLineBorder(com.projectlibre1.theme.NomadPlanColors.border(), 1));
     }
     
 	

@@ -30,7 +30,6 @@
 package org.pushingpixels.flamingo.internal.ui.ribbon;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -43,6 +42,8 @@ import org.pushingpixels.flamingo.api.ribbon.JRibbon;
 import org.pushingpixels.flamingo.api.ribbon.RibbonContextualTaskGroup;
 import org.pushingpixels.flamingo.internal.ui.common.BasicCommandToggleButtonUI;
 import org.pushingpixels.flamingo.internal.utils.*;
+
+import com.projectlibre1.theme.NomadPlanColors;
 
 /**
  * Basic UI for toggle button of ribbon tasks {@link JRibbonTaskToggleButton}.
@@ -75,8 +76,8 @@ public class BasicRibbonTaskToggleButtonUI extends BasicCommandToggleButtonUI {
 			Border toInstall = UIManager
 					.getBorder("RibbonTaskToggleButton.border");
 			if (toInstall == null)
-				toInstall = new BorderUIResource.EmptyBorderUIResource(1, 12,
-						1, 12);
+				toInstall = new BorderUIResource.EmptyBorderUIResource(4, 12,
+						4, 12);
 			this.commandButton.setBorder(toInstall);
 		}
 
@@ -139,13 +140,28 @@ public class BasicRibbonTaskToggleButtonUI extends BasicCommandToggleButtonUI {
 		RenderingUtils.installDesktopHints(g2d);
 		this.layoutInfo = this.layoutManager.getLayoutInfo(this.commandButton,
 				g);
+		// Use actual component bounds for background painting so the underline
+		// is visible (the old +10 pushed it below the clip region)
 		this.paintButtonBackground(g2d, new Rectangle(0, 0, c.getWidth(), c
-				.getHeight() + 10));
+				.getHeight()));
 		this.paintText(g2d);
 		g2d.dispose();
 	}
 
 	protected void paintText(Graphics g) {
+		boolean isSelected = this.commandButton.getActionModel().isSelected();
+
+		// Bold + 1pt larger font for selected tab
+		Font baseFont = this.commandButton.getFont();
+		if (baseFont != null) {
+			float size = baseFont.getSize2D() + 1f;
+			if (isSelected) {
+				g.setFont(baseFont.deriveFont(Font.BOLD, size));
+			} else {
+				g.setFont(baseFont.deriveFont(Font.PLAIN, size));
+			}
+		}
+
 		FontMetrics fm = g.getFontMetrics();
 		String toPaint = this.commandButton.getText();
 
@@ -170,6 +186,8 @@ public class BasicRibbonTaskToggleButtonUI extends BasicCommandToggleButtonUI {
 				break;
 			toPaint = toPaint.substring(0, toPaint.length() - 1);
 		}
+
+		g.setColor(isSelected ? NomadPlanColors.accent() : NomadPlanColors.textPrimary());
 		BasicGraphicsUtils.drawString(g, toPaint, -1, textRect.x, textRect.y
 				+ fm.getAscent());
 	}
@@ -186,77 +204,40 @@ public class BasicRibbonTaskToggleButtonUI extends BasicCommandToggleButtonUI {
 	 */
 	@Override
 	protected void paintButtonBackground(Graphics graphics, Rectangle toFill) {
-		JRibbon ribbon = (JRibbon) SwingUtilities.getAncestorOfClass(
-				JRibbon.class, this.commandButton);
-
-		this.buttonRendererPane.setBounds(toFill.x, toFill.y, toFill.width,
-				toFill.height);
-		ButtonModel model = this.rendererButton.getModel();
-		model.setEnabled(this.commandButton.isEnabled());
-		model.setSelected(false);
-		// System.out.println(toggleTabButton.getText() + ":"
-		// + toggleTabButton.isSelected());
-
-		// selected task toggle button should not have any background if
-		// the ribbon is minimized and it is not shown in a popup
 		boolean displayAsSelected = this.commandButton.getActionModel()
 				.isSelected();
-		model.setRollover(displayAsSelected
-				|| this.commandButton.getActionModel().isRollover());
-		model.setPressed(false);
-		if (model.isRollover()) {
-			Graphics2D g2d = (Graphics2D) graphics.create();
-			// partial translucency if it is not selected
-			if (!this.commandButton.getActionModel().isSelected()) {
-				g2d.setComposite(AlphaComposite.SrcOver.derive(0.4f));
-			}
-			g2d.translate(toFill.x, toFill.y);
+		boolean isRollover = this.commandButton.getActionModel().isRollover();
 
-			Color contextualGroupHueColor = ((JRibbonTaskToggleButton) this.commandButton)
-					.getContextualGroupHueColor();
-			boolean isContextualTask = (contextualGroupHueColor != null);
-			if (!isContextualTask) {
-				Shape clip = g2d.getClip();
-				g2d.clip(FlamingoUtilities.getRibbonTaskToggleButtonOutline(
-						toFill.width, toFill.height, 2));
-				this.buttonRendererPane.paintComponent(g2d,
-						this.rendererButton, this.commandButton, toFill.x
-								- toFill.width / 2, toFill.y - toFill.height
-								/ 2, 2 * toFill.width, 2 * toFill.height, true);
-				g2d.setColor(FlamingoUtilities.getBorderColor().darker());
-				g2d.setClip(clip);
-				g2d.draw(FlamingoUtilities.getRibbonTaskToggleButtonOutline(
-						toFill.width, toFill.height + 1, 2));
-			} else {
-				// draw to an offscreen image, colorize and draw the colorized
-				// image
-				BufferedImage offscreen = FlamingoUtilities.getBlankImage(
-						toFill.width, toFill.height);
-				Graphics2D offscreenGraphics = offscreen.createGraphics();
-				Shape clip = g2d.getClip();
-				offscreenGraphics.clip(FlamingoUtilities
-						.getRibbonTaskToggleButtonOutline(toFill.width,
-								toFill.height, 2));
-				this.buttonRendererPane.paintComponent(offscreenGraphics,
-						this.rendererButton, this.commandButton, toFill.x
-								- toFill.width / 2, toFill.y - toFill.height
-								/ 2, 2 * toFill.width, 2 * toFill.height, true);
-				offscreenGraphics.setColor(FlamingoUtilities.getBorderColor()
-						.darker());
-				offscreenGraphics.setClip(clip);
-				offscreenGraphics.draw(FlamingoUtilities
-						.getRibbonTaskToggleButtonOutline(toFill.width,
-								toFill.height + 1, 2));
-				offscreenGraphics.dispose();
+		Graphics2D g2d = (Graphics2D) graphics.create();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_ON);
 
-				ColorShiftFilter filter = new ColorShiftFilter(
-						contextualGroupHueColor,
-						RibbonContextualTaskGroup.HUE_ALPHA);
-				BufferedImage colorized = filter.filter(offscreen, null);
-				g2d.drawImage(colorized, 0, 0, null);
-			}
-			g2d.dispose();
+		if (displayAsSelected) {
+			// Selected tab: background fill + prominent teal bottom underline
+			g2d.setColor(NomadPlanColors.background());
+			g2d.fillRect(toFill.x, toFill.y, toFill.width, toFill.height);
+			// 4px accent underline at bottom edge
+			g2d.setColor(NomadPlanColors.accent());
+			g2d.fillRect(toFill.x, toFill.y + toFill.height - 4,
+					toFill.width, 4);
+		} else if (isRollover) {
+			// Hover: subtle surface background
+			g2d.setColor(NomadPlanColors.surface());
+			g2d.fillRect(toFill.x, toFill.y, toFill.width, toFill.height);
 		}
+		// Default: transparent (no paint)
+
+		// Contextual task group tint
+		Color contextualGroupHueColor = ((JRibbonTaskToggleButton) this.commandButton)
+				.getContextualGroupHueColor();
+		if (contextualGroupHueColor != null) {
+			g2d.setComposite(AlphaComposite.SrcOver
+					.derive((float) RibbonContextualTaskGroup.HUE_ALPHA));
+			g2d.setColor(contextualGroupHueColor);
+			g2d.fillRect(toFill.x, toFill.y, toFill.width, toFill.height);
+		}
+
+		g2d.dispose();
 	}
 
 	/*
@@ -273,7 +254,11 @@ public class BasicRibbonTaskToggleButtonUI extends BasicCommandToggleButtonUI {
 		Icon icon = b.getIcon();
 		String text = b.getText();
 
+		// Use bold + 1pt larger font for measurement to match paintText()
 		Font font = b.getFont();
+		if (font != null) {
+			font = font.deriveFont(Font.BOLD, font.getSize2D() + 1f);
+		}
 		FontMetrics fm = b.getFontMetrics(font);
 
 		Rectangle iconR = new Rectangle();
@@ -301,7 +286,11 @@ public class BasicRibbonTaskToggleButtonUI extends BasicCommandToggleButtonUI {
 		Icon icon = b.getIcon();
 		String text = "Www";
 
+		// Use bold + 1pt larger font for measurement to match paintText()
 		Font font = b.getFont();
+		if (font != null) {
+			font = font.deriveFont(Font.BOLD, font.getSize2D() + 1f);
+		}
 		FontMetrics fm = b.getFontMetrics(font);
 
 		Rectangle iconR = new Rectangle();

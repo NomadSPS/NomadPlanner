@@ -205,43 +205,24 @@ public class BasicRibbonApplicationMenuButtonUI extends BasicCommandButtonUI {
 	 */
 	@Override
 	protected void paintButtonBackground(Graphics graphics, Rectangle toFill) {
-		// graphics.setColor(Color.red);
-		// graphics.fillRect(toFill.x, toFill.y, toFill.width,
-		// toFill.height);
-		// if (true)
-		// return;
-		//
-		// System.out.println(toFill);
-		this.buttonRendererPane.setBounds(toFill.x, toFill.y, toFill.width,
-				toFill.height);
-		ButtonModel model = this.rendererButton.getModel();
-		model.setEnabled(true);
-		model.setSelected(this.applicationMenuButton.getPopupModel()
-				.isSelected());
-		model.setRollover(this.applicationMenuButton.getPopupModel()
-				.isRollover());
-		model.setPressed(this.applicationMenuButton.getPopupModel().isPressed()
-				|| this.applicationMenuButton.getPopupModel().isPopupShowing());
-		model.setArmed(this.applicationMenuButton.getActionModel().isArmed());
-
 		Graphics2D g2d = (Graphics2D) graphics.create();
-		g2d.translate(toFill.x, toFill.y);
-
-		Shape clip = g2d.getClip();
-		double arcw=(double)toFill.height;//projectlibre
-		double arch=(double)toFill.height;
-		g2d.clip(new RoundRectangle2D.Double(0, 0, toFill.width, toFill.height, arcw, arch)); //projectlibre
-		this.rendererButton.setBorderPainted(false);
-		this.buttonRendererPane.paintComponent(g2d, this.rendererButton,
-				this.applicationMenuButton, -toFill.width / 2,
-				-toFill.height / 2, 2 * toFill.width, 2 * toFill.height, true);
-		g2d.setColor(Color.WHITE);
-		g2d.setClip(clip);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.fill(new RoundRectangle2D.Double(0, 0, toFill.width, toFill.height, arcw, arch));//projectlibre
-		g2d.setColor(FlamingoUtilities.getBorderColor().darker());
-		g2d.draw(new RoundRectangle2D.Double(0, 0, toFill.width, toFill.height, arcw, arch));//projectlibre
+		g2d.translate(toFill.x, toFill.y);
+
+		// Clean flat background — no border, no curved outline
+		boolean isRollover = this.applicationMenuButton.getPopupModel().isRollover();
+		boolean isPressed = this.applicationMenuButton.getPopupModel().isPressed();
+		if (isPressed) {
+			g2d.setColor(com.projectlibre1.theme.NomadPlanColors.border());
+		} else if (isRollover) {
+			g2d.setColor(com.projectlibre1.theme.NomadPlanColors.surface());
+		} else {
+			// Transparent — blends with ribbon background
+			g2d.setColor(new Color(0, 0, 0, 0));
+		}
+		g2d.fill(new RoundRectangle2D.Double(2, 2, toFill.width - 4,
+				toFill.height - 4, 8, 8));
 		g2d.dispose();
 	}
 }

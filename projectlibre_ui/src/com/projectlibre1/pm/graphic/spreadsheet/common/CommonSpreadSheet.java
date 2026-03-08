@@ -132,7 +132,7 @@ public class CommonSpreadSheet extends CommonTable implements CacheListener, Sav
 
 	public CommonSpreadSheet() {
 		super();
-		setGridColor(Colors.GRAY);
+		setGridColor(com.projectlibre1.theme.NomadPlanColors.border());
 		putClientProperty("JTable.autoStartsEdit",Boolean.TRUE);
 		//setSurrendersFocusOnKeystroke(true); //has the side effect of selecting the first character of cell after ENTER keystroke
 		setAutoCreateColumnsFromModel(false);

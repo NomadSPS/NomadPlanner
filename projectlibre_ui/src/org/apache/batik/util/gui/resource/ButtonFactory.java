@@ -381,10 +381,15 @@ public class ButtonFactory extends ResourceManager {
 		// Icon
 		try {
 			String s = getString(name + ICON_SUFFIX);
-			URL url = classLoader.getResource(s); //LC MODIF
-			//URL url = actions.getClass().getResource(s);
-			if (url != null) {
-				b.setIcon(new ImageIcon(url));
+			// Try modern vector icon via IconManager first
+			javax.swing.ImageIcon modernIcon = com.projectlibre1.pm.graphic.IconManager.getIcon(s);
+			if (modernIcon != null) {
+				b.setIcon(modernIcon);
+			} else {
+				URL url = classLoader.getResource(s); //LC MODIF
+				if (url != null) {
+					b.setIcon(new ImageIcon(url));
+				}
 			}
 		} catch (MissingResourceException e) {
 		}

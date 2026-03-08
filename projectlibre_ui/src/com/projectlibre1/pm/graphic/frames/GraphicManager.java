@@ -129,6 +129,8 @@ import org.pushingpixels.flamingo.api.ribbon.RibbonTask;
 
 import com.projectlibre.ui.ribbon.CustomRibbonBandGenerator;
 import com.projectlibre.ui.ribbon.ProjectLibreRibbonUI;
+import com.projectlibre1.menu.MenuBarFactory;
+import com.projectlibre1.menu.ModernToolBar;
 import com.projectlibre1.configuration.Configuration;
 import com.projectlibre1.configuration.FieldDictionary;
 import com.projectlibre1.configuration.Settings;
@@ -2507,8 +2509,26 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
 
     	
     }
-    
-    
+
+    public void setModernToolbar(ModernMainFrame frame, MenuManager menuManager) {
+        filterToolBarManager = FilterToolBarManager.create(getMenuManager());
+
+        MenuBarFactory mbf = new MenuBarFactory(menuManager);
+        frame.setJMenuBar(mbf.createMenuBar());
+
+        ModernToolBar mtb = new ModernToolBar(menuManager, filterToolBarManager);
+        JToolBar toolbar = mtb.createToolBar();
+
+        // Add project combo box at the right end of the toolbar
+        toolbar.add(new Box.Filler(new Dimension(0,0), new Dimension(0,0),
+                new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE)));
+        toolbar.add(((DefaultFrameManager)getFrameManager()).getProjectComboPanel());
+        toolbar.add(Box.createRigidArea(new Dimension(8, 0)));
+
+        frame.getContentPane().add(toolbar, java.awt.BorderLayout.NORTH);
+    }
+
+
 //    public void addProjectTab(String projectName){
 //    	if (!(container instanceof JRibbonFrame))
 //    		return;
@@ -2577,6 +2597,8 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
 //				projectListMenu = (JMenu) menu.getComponent(5);
 //			}
 
+    	} else if (container instanceof ModernMainFrame) {
+    		setModernToolbar((ModernMainFrame) container, getMenuManager());
     	} else if (Environment.isNewLook()) {
 			if (Environment.isNeedToRestart()) {
 				contentPane.add(new JLabel(Messages.getString("Error.restart")),BorderLayout.CENTER);
@@ -2597,7 +2619,7 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
 			toolBar.add(((DefaultFrameManager)getFrameManager()).getProjectComboPanel());
 			toolBar.add(Box.createRigidArea(new Dimension(20,20)));
 			if (Environment.isNewLaf())
-				toolBar.setBackground(Color.WHITE);
+				toolBar.setBackground(com.projectlibre1.theme.NomadPlanColors.background());
 			toolBar.setFloatable(false);
 			toolBar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		    Box top;
@@ -2618,7 +2640,7 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
 			contentPane.add(top, BorderLayout.BEFORE_FIRST_LINE);
 			contentPane.add(bottom,BorderLayout.AFTER_LAST_LINE);
 			if (Environment.isNewLaf())
-				contentPane.setBackground(Color.WHITE);
+				contentPane.setBackground(com.projectlibre1.theme.NomadPlanColors.background());
 
 			if (Environment.isMac()){
 				//System.setProperty("apple.laf.useScreenMenuBar","true");

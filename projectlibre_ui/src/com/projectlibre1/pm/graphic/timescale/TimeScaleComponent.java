@@ -94,8 +94,8 @@ public class TimeScaleComponent extends JPanel {
 		int h=GraphicConfiguration.getInstance().getColumnHeaderHeight();
 
 
-		if (textColor==null) textColor=Color.BLACK;
-		if (lineColor==null) lineColor=Environment.isMac()?Color.LIGHT_GRAY:Color.BLACK;
+		textColor=com.projectlibre1.theme.NomadPlanColors.textPrimary();
+		lineColor=com.projectlibre1.theme.NomadPlanColors.border();
 
 //		setBackground(UIManager.getColor("TableHeader.cellColor"));
 //		setBackground(UIManager.getColor("TableHeader.cellBackground"));

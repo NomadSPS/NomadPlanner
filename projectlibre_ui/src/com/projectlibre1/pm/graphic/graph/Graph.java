@@ -98,7 +98,8 @@ public abstract class Graph extends JComponent implements GraphListener, GraphPa
 		//TODO unregister
 		
 		
-		setBackground(Color.WHITE);
+		setBackground(javax.swing.UIManager.getColor("Table.background") != null
+			? javax.swing.UIManager.getColor("Table.background") : Color.WHITE);
 		setOpaque(true);
 		setDoubleBuffered(true);
 		setLayout(null);
@@ -169,7 +170,10 @@ public abstract class Graph extends JComponent implements GraphListener, GraphPa
 	
 	
     //to override
-	public void updateUI(){}
+	public void updateUI(){
+		setBackground(javax.swing.UIManager.getColor("Table.background") != null
+			? javax.swing.UIManager.getColor("Table.background") : Color.WHITE);
+	}
 
 	
 	public Rectangle getDrawingBounds(){

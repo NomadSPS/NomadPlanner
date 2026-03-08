@@ -62,7 +62,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.border.BevelBorder;
+import javax.swing.BorderFactory;
 
 import com.projectlibre1.menu.MenuActionConstants;
 import com.projectlibre1.pm.graphic.IconManager;
@@ -83,7 +83,7 @@ public class SpreadSheetPopupMenu extends JPopupMenu {
 	        this.spreadSheet=spreadSheet;
 	        
 	        //setLabel("");
-	        setBorder(new BevelBorder(BevelBorder.RAISED));
+	        setBorder(BorderFactory.createLineBorder(com.projectlibre1.theme.NomadPlanColors.border(), 1));
 	        
 	        final SpreadSheet sp=spreadSheet;
 			AbstractAction action;

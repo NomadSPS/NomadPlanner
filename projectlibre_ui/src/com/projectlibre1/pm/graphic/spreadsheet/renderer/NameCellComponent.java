@@ -113,7 +113,8 @@ public class NameCellComponent extends JPanel {
 		textComponent.setFont(getFont());
 	}
 	public void init() {
-		setBackground(Color.WHITE);
+		setBackground(javax.swing.UIManager.getColor("Table.background") != null
+			? javax.swing.UIManager.getColor("Table.background") : Color.WHITE);
 		textComponent.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		if (getComponentCount() != 0)
