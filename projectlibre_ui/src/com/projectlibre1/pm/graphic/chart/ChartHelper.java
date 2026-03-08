@@ -77,6 +77,7 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 
 import com.projectlibre1.graphic.configuration.shape.Colors;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.pm.assignment.TimeDistributedConstants;
 import com.projectlibre1.util.Environment;
 
@@ -212,7 +213,7 @@ public class ChartHelper implements TimeDistributedConstants {
 	public static Color getColorForField(Object field) {
 		Color result = (Color) getMap().get(field);
 		if (result == null)
-			result = Color.BLACK;
+			result = NomadPlanColors.textPrimary();
 		return result;
 
 	}

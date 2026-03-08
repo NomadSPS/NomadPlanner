@@ -95,6 +95,7 @@ import com.projectlibre1.options.EditOption;
 import com.projectlibre1.pm.task.AccessControlPolicy;
 import com.projectlibre1.pm.task.Project;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.Alert;
 import com.projectlibre1.util.ClassUtils;
 import com.projectlibre1.util.DateTime;
@@ -144,8 +145,8 @@ public class ComponentFactory {
 	}
 	
 	static void  markComponentAsUnmodified(JComponent component) {
-		component.setForeground(Color.BLACK);
-		verifiedComponent(component).setForeground(Color.BLACK);
+		component.setForeground(NomadPlanColors.textPrimary());
+		verifiedComponent(component).setForeground(NomadPlanColors.textPrimary());
 	}
 
 	public static void setValueOfComponent(JComponent component, Object value, boolean readOnly) {
@@ -277,7 +278,7 @@ public class ComponentFactory {
 						else 
 							same = spin == ((Number)v.getValue()).doubleValue();
 					}
-					t.setForeground(same ? Color.BLACK : Color.BLUE);
+					t.setForeground(same ? NomadPlanColors.textPrimary() : NomadPlanColors.accent());
 				}});
 		} else {
 			if (field.isMemo()) {
@@ -302,7 +303,7 @@ public class ComponentFactory {
 
 			public void keyTyped(KeyEvent arg0) {
 				JTextComponent textComponent = (JTextComponent)arg0.getComponent();
-				textComponent.setForeground(Color.BLUE);
+				textComponent.setForeground(NomadPlanColors.accent());
 				FieldDialog parentFieldDialog = getParentFieldDialog(textComponent);
 				if (parentFieldDialog != null)
 					parentFieldDialog.setDirtyComponent(textComponent);

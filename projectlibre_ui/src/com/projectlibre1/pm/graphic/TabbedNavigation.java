@@ -96,6 +96,7 @@ import com.projectlibre1.menu.MenuManager;
 import com.projectlibre1.pm.graphic.frames.DocumentFrame;
 import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.Environment;
 
 public class TabbedNavigation implements MenuActionConstants, Serializable {
@@ -109,9 +110,6 @@ public class TabbedNavigation implements MenuActionConstants, Serializable {
 	private static int eventNum = 0;
 	private JPopupMenu trackingPopup = null;
 	private int resourceTabCount = 0;
-	private static Color backgroundSelected = new Color(125,157,230);
-	//UIManager.getColor("ProgressBar.selectionBackground");
-    private Color backgroundUnselected=UIManager.getColor("TabbedPane.unselectedBackground");
 
 	private ArrayList<JButton> trackingButtons = new ArrayList<JButton>();
 
@@ -119,8 +117,7 @@ public class TabbedNavigation implements MenuActionConstants, Serializable {
 		private static final long serialVersionUID = 7993870683783896098L;
 		ExtTabbedPane() {
 			setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-			final Font normal = new Font("Verdana", 1, 11);
-			setFont(normal);
+			setFont(UIManager.getFont("TabbedPane.font"));
 			setBorder(BorderFactory.createEmptyBorder());
 
 			addChangeListener(new ChangeListener() {
@@ -133,14 +130,14 @@ public class TabbedNavigation implements MenuActionConstants, Serializable {
 							removeFilterToolBar((JToolBar)old);
 						ac = (AbstractAction)actions.get(i);
 						ac.actionPerformed(new ActionEvent(this,eventNum++,"click"));
-						tabbedPane.setForegroundAt(oldSelected, Color.BLACK);
-						tabbedPane.setBackgroundAt(oldSelected, backgroundUnselected);
+						tabbedPane.setForegroundAt(oldSelected, NomadPlanColors.textPrimary());
+						tabbedPane.setBackgroundAt(oldSelected, UIManager.getColor("TabbedPane.unselectedBackground"));
 						JComponent selectedComponent = (JComponent) tabbedPane.getSelectedComponent();
 						if (selectedComponent instanceof JToolBar)
 							addFilterToolBar((JToolBar)selectedComponent);
 					}
-					tabbedPane.setForegroundAt(i, Color.WHITE);
-					tabbedPane.setBackgroundAt(i, backgroundSelected);
+					tabbedPane.setForegroundAt(i, NomadPlanColors.background());
+					tabbedPane.setBackgroundAt(i, NomadPlanColors.accent());
 					oldSelected = i;
 				}
 

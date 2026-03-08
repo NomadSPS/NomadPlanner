@@ -84,7 +84,7 @@ public class GanttParamsImpl implements GanttParams, Serializable,Cloneable {
 	public GanttParamsImpl(){
 		configuration=GraphicConfiguration.getInstance();
 		barStyles=(BarStyles) Dictionary.get(BarStyles.category,"standard");
-		columnHeaderFont=new Font("Default",Font.PLAIN,10);
+		columnHeaderFont=javax.swing.UIManager.getFont("TableHeader.font");
 		routing=new DefaultGanttLinkRouting();
 		rowHeight=configuration.getRowHeight();
 	}

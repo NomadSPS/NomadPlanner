@@ -95,6 +95,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.projectlibre1.menu.MenuActionConstants;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.pm.graphic.IconManager;
 import com.projectlibre1.pm.graphic.model.cache.GraphicNode;
 import com.projectlibre1.pm.graphic.spreadsheet.selection.event.SelectionNodeEvent;
@@ -362,7 +363,7 @@ public class ChartLegend  implements SelectionNodeListener, Serializable , Savab
 	   			Color color = ChartHelper.getColorForField(value);
 	   			setBackground(color);
 	   			if (color.getRed() + color.getGreen() + color.getBlue() < 450) // draw dark with white foreground
-	   				setForeground(Color.white);
+	   				setForeground(NomadPlanColors.background());
 	   			else
 		   			setForeground(list.getForeground());
 	   				
@@ -374,7 +375,7 @@ public class ChartLegend  implements SelectionNodeListener, Serializable , Savab
 	         //list item is selected
 	        if (iss) {
 	            setBorder(BorderFactory.createLineBorder(
-	              Color.black, 1));
+	              NomadPlanColors.border(), 1));
 	        } else {
 	            setBorder(BorderFactory.createLineBorder(
 	             list.getBackground(), 1));

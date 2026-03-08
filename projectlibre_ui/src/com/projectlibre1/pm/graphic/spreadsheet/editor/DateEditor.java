@@ -80,6 +80,7 @@ import com.projectlibre1.field.FieldParseException;
 import com.projectlibre1.options.CalendarOption;
 import com.projectlibre1.options.EditOption;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.Alert;
 import com.projectlibre1.util.DateTime;
 
@@ -147,7 +148,7 @@ public class DateEditor extends DateFieldTableEditor {
 			format = EditOption.getInstance().getDateFormat();
 
     	dateField = new ExtDateField(format);
-        dateField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        dateField.setBorder(BorderFactory.createLineBorder(NomadPlanColors.border()));
         if (value == null) {
         	long date = DateTime.midnightToday();
     		if (field.isStartValue())
@@ -157,8 +158,8 @@ public class DateEditor extends DateFieldTableEditor {
     		value = new Date(date);
         }
         dateField.setValue(value);
-        dateField.getTextField().setSelectedTextColor(Color.WHITE);
-        dateField.getTextField().setSelectionColor(Color.BLACK);
+        dateField.getTextField().setSelectedTextColor(NomadPlanColors.background());
+        dateField.getTextField().setSelectionColor(NomadPlanColors.textPrimary());
 //        Date d = DateTime.gmtDate(new Date(DateTime.midnightToday()));
 //        initialValue = (value == null) ? d : (Date) value;
         initialValue = (Date)value;

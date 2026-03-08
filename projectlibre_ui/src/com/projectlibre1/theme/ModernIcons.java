@@ -255,6 +255,14 @@ public class ModernIcons {
 
         // --- Stage 3: Misc ---
         PAINTERS.put("format.other", ModernIcons::paintFormatOther);
+
+        // --- Stage 4: Remaining bitmap replacements ---
+        PAINTERS.put("infomation.icon", ModernIcons::paintInfo);
+        PAINTERS.put("network.icon", ModernIcons::paintNetworkView);
+        PAINTERS.put("spreadsheet.fetchedLazyCollapsed.icon", ModernIcons::paintCollapse);
+        PAINTERS.put("spreadsheet.fetchedLazyExpanded.icon", ModernIcons::paintExpand);
+        PAINTERS.put("spreadsheet.unfetchedLazy.icon", ModernIcons::paintUnfetchedLazy);
+        PAINTERS.put("view.calendar", ModernIcons::paintCalendar);
     }
 
     public static IconPainter getPainter(String key) {
@@ -1657,6 +1665,44 @@ public class ModernIcons {
         float cx2 = cx - w * 0.18f;
         g.draw(new Line2D.Float(cx2, m, cx2 + w * 0.2f, h * 0.5f));
         g.draw(new Line2D.Float(cx2 + w * 0.2f, h * 0.5f, cx2, h - m));
+    }
+
+    // --- Stage 4 painters ---
+
+    private static void paintNetworkView(Graphics2D g, int w, int h) {
+        setup(g, w);
+        float m = w * 0.15f;
+        // Three connected boxes (PERT/network diagram)
+        float bw = w * 0.22f, bh = h * 0.18f;
+        // top center box
+        float tx = w * 0.5f - bw / 2, ty = m;
+        g.setColor(fg());
+        g.draw(new RoundRectangle2D.Float(tx, ty, bw, bh, 2, 2));
+        // bottom-left box
+        float lx = m, ly = h - m - bh;
+        g.draw(new RoundRectangle2D.Float(lx, ly, bw, bh, 2, 2));
+        // bottom-right box
+        float rx = w - m - bw, ry = ly;
+        g.draw(new RoundRectangle2D.Float(rx, ry, bw, bh, 2, 2));
+        // lines: top box to bottom boxes
+        g.setColor(secondary());
+        g.draw(new Line2D.Float(tx + bw * 0.3f, ty + bh, lx + bw * 0.7f, ly));
+        g.draw(new Line2D.Float(tx + bw * 0.7f, ty + bh, rx + bw * 0.3f, ry));
+    }
+
+    private static void paintUnfetchedLazy(Graphics2D g, int w, int h) {
+        setup(g, w);
+        // Hollow circle with ellipsis (loading indicator)
+        float cx = w * 0.5f, cy = h * 0.5f;
+        float r = w * 0.3f;
+        g.setColor(secondary());
+        g.draw(new Ellipse2D.Float(cx - r, cy - r, r * 2, r * 2));
+        // three dots inside
+        float dotR = w * 0.04f;
+        g.setColor(fg());
+        g.fill(new Ellipse2D.Float(cx - w * 0.14f - dotR, cy - dotR, dotR * 2, dotR * 2));
+        g.fill(new Ellipse2D.Float(cx - dotR, cy - dotR, dotR * 2, dotR * 2));
+        g.fill(new Ellipse2D.Float(cx + w * 0.14f - dotR, cy - dotR, dotR * 2, dotR * 2));
     }
 
     private static void paintFormatOther(Graphics2D g, int w, int h) {

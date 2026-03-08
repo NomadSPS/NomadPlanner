@@ -75,6 +75,7 @@ import com.projectlibre1.field.ObjectRef;
 import com.projectlibre1.field.Select;
 import com.projectlibre1.options.EditOption;
 import com.projectlibre1.undo.FieldEdit;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.Alert;
 import com.projectlibre1.util.DateTime;
 
@@ -139,8 +140,8 @@ public class FieldVerifier extends InputVerifier {
 		JComponent c = component;
 		component = valueHoldingComponent(component);
 		
-		component.setForeground(Color.BLACK);
-		c.setForeground(Color.BLACK);
+		component.setForeground(NomadPlanColors.textPrimary());
+		c.setForeground(NomadPlanColors.textPrimary());
 		
 		Object newValue = ComponentFactory.getValueFromComponent(component, field);
 //System.out.println("new value " + newValue + " " + (newValue != null ?newValue.getClass():""));
@@ -158,8 +159,8 @@ public class FieldVerifier extends InputVerifier {
 					}
 				} catch (ParseException e1) {
 					exception = new FieldParseException(field.syntaxErrorForField());
-					component.setForeground(Color.RED);
-					c.setForeground(Color.RED);
+					component.setForeground(NomadPlanColors.error());
+					c.setForeground(NomadPlanColors.error());
 					if (parentFieldDialog != null)
 						parentFieldDialog.setDirtyComponent(c);
 
@@ -205,8 +206,8 @@ public class FieldVerifier extends InputVerifier {
 			}
 		} catch (FieldParseException e) {
 			exception = e;
-			component.setForeground(Color.RED);
-			c.setForeground(Color.RED);
+			component.setForeground(NomadPlanColors.error());
+			c.setForeground(NomadPlanColors.error());
 			if (parentFieldDialog != null)
 				parentFieldDialog.setDirtyComponent(c);
 			return false;

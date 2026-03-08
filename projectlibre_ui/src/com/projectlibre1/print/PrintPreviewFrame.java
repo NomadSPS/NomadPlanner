@@ -98,6 +98,7 @@ import com.projectlibre1.menu.MenuActionsMap;
 import com.projectlibre1.menu.MenuManager;
 import com.projectlibre1.pm.graphic.IconManager;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.Alert;
 
 
@@ -506,7 +507,7 @@ public PagePanel getPagePanel() {
 
 			super.paint (g);
 
-			setBackground(Color.GRAY);
+			setBackground(NomadPlanColors.surface());
 
 			Dimension size = getSize ();
 			double pw=size.getWidth();
@@ -521,7 +522,7 @@ public PagePanel getPagePanel() {
 			Color svgColor=g2.getColor();
 			//Stroke svgStroke=g2.getStroke();
 
-			g2.setColor(Color.GRAY);
+			g2.setColor(NomadPlanColors.surface());
 			g2.fill(new Rectangle2D.Double(0.0,0.0, pw,ph));
 
 			g2.transform(updateTransform());

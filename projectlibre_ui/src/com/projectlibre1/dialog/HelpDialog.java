@@ -177,7 +177,7 @@ public final class HelpDialog extends AbstractDialog {
 		//TODO set minimum size
 		FormLayout layout = new FormLayout("250px,300px,250px" , // cols //$NON-NLS-1$
 			
-				"p, 6dlu, p, 6dlu, p, 6dlu, p, 1dlu, p, 1dlu, p, 1dlu, p, 1dlu, p, 6dlu, p, 6dlu, p, 6dlu, p, 10dlu, p, 6dlu, p, 6dlu, p"); // rows //$NON-NLS-1$
+				"p, 6dlu, p, 6dlu, p, 6dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 6dlu, p, 6dlu, p, 6dlu, p, 10dlu, p, 6dlu, p, 6dlu, p"); // rows //$NON-NLS-1$
 
 		// Create a builder that assists in adding components to the container.
 		// Wrap the panel with a standardized border.
