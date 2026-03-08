@@ -124,8 +124,8 @@ public class SimpleEditor extends DefaultCellEditor   {
 		
 		component.setText(stringValue);
 		//component.resetChange();
-		component.setSelectedTextColor(Color.WHITE);
-		component.setSelectionColor(Color.BLACK);
+		component.setSelectedTextColor(com.projectlibre1.theme.NomadPlanColors.background());
+		component.setSelectionColor(com.projectlibre1.theme.NomadPlanColors.textPrimary());
 		
 		if (table.getModel() instanceof SpreadSheetModel) {
 			SpreadSheetModel model  = (SpreadSheetModel) table.getModel();

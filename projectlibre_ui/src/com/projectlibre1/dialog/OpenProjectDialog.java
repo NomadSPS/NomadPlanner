@@ -399,7 +399,7 @@ public final class OpenProjectDialog extends AbstractDialog {
 					ProjectData project=(ProjectData)projects.get(row);
 					setEnabled(table == null || table.isEnabled());
 					//if (defaultColor==null) defaultColor=getForeground();
-					setForeground((canBeUsed(project))?Color.BLACK:Color.GRAY);
+					setForeground((canBeUsed(project))?com.projectlibre1.theme.NomadPlanColors.textPrimary():com.projectlibre1.theme.NomadPlanColors.textSecondary());
 					super.getTableCellRendererComponent(table, value, selected, focused, row, column);
 					return this;
 				}

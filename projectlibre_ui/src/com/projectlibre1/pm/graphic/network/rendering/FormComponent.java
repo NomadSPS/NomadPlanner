@@ -113,9 +113,9 @@ public class FormComponent extends JPanel{
 		init(format);
 		setOpaque(false);
 		setForeground(javax.swing.UIManager.getColor("Table.foreground") != null
-			? javax.swing.UIManager.getColor("Table.foreground") : Color.BLACK);
+			? javax.swing.UIManager.getColor("Table.foreground") : com.projectlibre1.theme.NomadPlanColors.textPrimary());
 		setBackground(javax.swing.UIManager.getColor("Table.background") != null
-			? javax.swing.UIManager.getColor("Table.background") : Color.WHITE);
+			? javax.swing.UIManager.getColor("Table.background") : com.projectlibre1.theme.NomadPlanColors.background());
 	}
 	
 	

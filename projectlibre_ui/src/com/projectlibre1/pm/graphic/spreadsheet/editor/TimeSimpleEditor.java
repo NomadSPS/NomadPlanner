@@ -112,8 +112,8 @@ public class TimeSimpleEditor extends DefaultCellEditor {
 		else stringValue=FieldConverter.toString(value);
 		component.setText(stringValue);
 		//component.resetChange();
-		component.setSelectedTextColor(Color.WHITE);
-		component.setSelectionColor(Color.BLACK);
+		component.setSelectedTextColor(com.projectlibre1.theme.NomadPlanColors.background());
+		component.setSelectionColor(com.projectlibre1.theme.NomadPlanColors.textPrimary());
 		component.setHorizontalAlignment(JTextField.RIGHT);
 		return component;
 	}

@@ -361,7 +361,7 @@ public abstract class NetworkRenderer extends GraphRenderer{
 					//c=new JLabel("test");
 			    	c.setDoubleBuffered(false);
 			    	c.setOpaque(false);
-			    	c.setForeground(Color.BLACK);
+			    	c.setForeground(com.projectlibre1.theme.NomadPlanColors.textPrimary());
 					c.setSize(bounds.width, bounds.height);
 			    	g.translate(bounds.x,bounds.y);
 			    	c.doLayout();
