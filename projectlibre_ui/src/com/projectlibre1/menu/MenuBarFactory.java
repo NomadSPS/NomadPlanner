@@ -249,7 +249,12 @@ public class MenuBarFactory implements MenuActionConstants {
     // ---- Helper: create a menu item wired to an action ----
 
     private void addItem(JMenu menu, String actionId, String fallbackText, int keyCode, int modifiers) {
-        Action action = menuManager.getActionFromId(actionId);
+        Action action = null;
+        try {
+            action = menuManager.getActionFromId(actionId);
+        } catch (Exception e) {
+            // Action not found — will create disabled menu item
+        }
         JMenuItem item;
         if (action != null) {
             item = new JMenuItem(action);
