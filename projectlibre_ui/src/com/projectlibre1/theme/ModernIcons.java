@@ -118,6 +118,7 @@ public class ModernIcons {
         PAINTERS.put("menu24.assignResources", ModernIcons::paintViewResources);
         PAINTERS.put("menu24.scrollToTask", ModernIcons::paintScrollToTask);
         PAINTERS.put("menu24.refresh", ModernIcons::paintRefresh);
+        PAINTERS.put("menu24.wbsSummaryColors", ModernIcons::paintWbsSummaryColors);
 
         // Small menu icons (16px)
         PAINTERS.put("menu.save", ModernIcons::paintSave);
@@ -142,6 +143,7 @@ public class ModernIcons {
         PAINTERS.put("menu.unlink", ModernIcons::paintUnlink);
         PAINTERS.put("menu.changeWorkingTime", ModernIcons::paintCalendar);
         PAINTERS.put("menu.assignResources", ModernIcons::paintViewResources);
+        PAINTERS.put("WbsSummaryColors", ModernIcons::paintWbsSummaryColors);
 
         // Logo (application menu button)
         PAINTERS.put("logo.NomadPlan", ModernIcons::paintLogo);
@@ -1005,6 +1007,48 @@ public class ModernIcons {
         float ay = cy - r * 0.5f;
         g.draw(new Line2D.Float(ax, ay, ax + arr, ay - arr * 0.3f));
         g.draw(new Line2D.Float(ax, ay, ax - arr * 0.3f, ay - arr));
+    }
+
+    private static void paintWbsSummaryColors(Graphics2D g, int w, int h) {
+        setup(g, w);
+        float left = w * 0.14f;
+        float startY = h * 0.18f;
+        float rowHeight = h * 0.14f;
+        float rowGap = h * 0.1f;
+        float indent = w * 0.06f;
+        float chipWidth = w * 0.14f;
+        Color[] fills = {
+            accent(),
+            new Color(0xF59E0B),
+            new Color(0x60A5FA)
+        };
+
+        for (int i = 0; i < fills.length; i++) {
+            float y = startY + i * (rowHeight + rowGap);
+            float chipX = left + i * indent;
+            g.setColor(fills[i]);
+            g.fill(new RoundRectangle2D.Float(chipX, y, chipWidth, rowHeight, rowHeight * 0.45f, rowHeight * 0.45f));
+
+            g.setColor(fg());
+            float lineX = chipX + chipWidth + w * 0.08f;
+            float lineY = y + rowHeight * 0.5f;
+            float lineWidth = w * (0.42f - i * 0.05f);
+            g.draw(new Line2D.Float(lineX, lineY, lineX + lineWidth, lineY));
+        }
+
+        float paletteSize = w * 0.22f;
+        float paletteX = w - paletteSize - w * 0.14f;
+        float paletteY = h - paletteSize - h * 0.14f;
+        g.setColor(fg());
+        g.draw(new Ellipse2D.Float(paletteX, paletteY, paletteSize, paletteSize));
+
+        float swatch = paletteSize * 0.22f;
+        g.setColor(accent());
+        g.fill(new Rectangle2D.Float(paletteX + swatch * 0.55f, paletteY + swatch * 0.5f, swatch, swatch));
+        g.setColor(new Color(0xF59E0B));
+        g.fill(new Rectangle2D.Float(paletteX + swatch * 1.75f, paletteY + swatch * 0.55f, swatch, swatch));
+        g.setColor(new Color(0x60A5FA));
+        g.fill(new Rectangle2D.Float(paletteX + swatch * 1.15f, paletteY + swatch * 1.8f, swatch, swatch));
     }
 
     private static void paintSaveAll(Graphics2D g, int w, int h) {
