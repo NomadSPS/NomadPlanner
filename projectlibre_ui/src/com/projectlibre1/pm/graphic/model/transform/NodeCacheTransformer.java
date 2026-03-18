@@ -84,6 +84,7 @@ import com.projectlibre1.grouping.core.transform.HierarchicObject;
 import com.projectlibre1.grouping.core.transform.ViewConfiguration;
 import com.projectlibre1.grouping.core.transform.ViewTransformer;
 import com.projectlibre1.grouping.core.transform.filtering.BaseFilter;
+import com.projectlibre1.grouping.core.transform.filtering.DrivingPathFilter;
 import com.projectlibre1.grouping.core.transform.filtering.NodeFilter;
 import com.projectlibre1.grouping.core.transform.grouping.NodeGroup;
 import com.projectlibre1.grouping.core.transform.grouping.NodeGrouper;
@@ -168,6 +169,11 @@ public class NodeCacheTransformer implements CacheTransformer {
             if (!gnode.isVoid()){
 	            current=(composition==null)?gnode.getNode():composition.evaluate(gnode.getNode());
 	            alreadyExcluded=false;
+                NodeFilter activeUserFilter = userFilter;
+                if (hiddenFilter instanceof DrivingPathFilter
+                    && ((DrivingPathFilter) hiddenFilter).isPathActiveFor(current)) {
+                    activeUserFilter = null;
+                }
 	             if (hiddenFilter!=null){
 	                 if(!hiddenFilter.evaluate(current)){
 	                    if (!gnode.isSummary() || !preserveHierarchy){
@@ -178,8 +184,8 @@ public class NodeCacheTransformer implements CacheTransformer {
                     	alreadyExcluded=true;
 	                }
 	            }
-	             if (userFilter!=null&&!alreadyExcluded){
-	                 if(!userFilter.evaluate(current)){
+	             if (activeUserFilter!=null&&!alreadyExcluded){
+	                 if(!activeUserFilter.evaluate(current)){
 	                	 if (!gnode.isSummary() || !preserveHierarchy){
 	                		 i.remove();
 	 		                continue;

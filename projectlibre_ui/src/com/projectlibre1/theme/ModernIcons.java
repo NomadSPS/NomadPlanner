@@ -119,6 +119,9 @@ public class ModernIcons {
         PAINTERS.put("menu24.scrollToTask", ModernIcons::paintScrollToTask);
         PAINTERS.put("menu24.refresh", ModernIcons::paintRefresh);
         PAINTERS.put("menu24.wbsSummaryColors", ModernIcons::paintWbsSummaryColors);
+        PAINTERS.put("menu24.drivingPathBackward", ModernIcons::paintDrivingPathBackward);
+        PAINTERS.put("menu24.drivingPathForward", ModernIcons::paintDrivingPathForward);
+        PAINTERS.put("menu24.drivingPathBoth", ModernIcons::paintDrivingPathBoth);
 
         // Small menu icons (16px)
         PAINTERS.put("menu.save", ModernIcons::paintSave);
@@ -144,6 +147,9 @@ public class ModernIcons {
         PAINTERS.put("menu.changeWorkingTime", ModernIcons::paintCalendar);
         PAINTERS.put("menu.assignResources", ModernIcons::paintViewResources);
         PAINTERS.put("WbsSummaryColors", ModernIcons::paintWbsSummaryColors);
+        PAINTERS.put("DrivingPathBackward", ModernIcons::paintDrivingPathBackward);
+        PAINTERS.put("DrivingPathForward", ModernIcons::paintDrivingPathForward);
+        PAINTERS.put("DrivingPathBoth", ModernIcons::paintDrivingPathBoth);
 
         // Logo (application menu button)
         PAINTERS.put("logo.NomadPlan", ModernIcons::paintLogo);
@@ -1049,6 +1055,83 @@ public class ModernIcons {
         g.fill(new Rectangle2D.Float(paletteX + swatch * 1.75f, paletteY + swatch * 0.55f, swatch, swatch));
         g.setColor(new Color(0x60A5FA));
         g.fill(new Rectangle2D.Float(paletteX + swatch * 1.15f, paletteY + swatch * 1.8f, swatch, swatch));
+    }
+
+    private static void paintDrivingPathBackward(Graphics2D g, int w, int h) {
+        paintDrivingPath(g, w, h, -1);
+    }
+
+    private static void paintDrivingPathForward(Graphics2D g, int w, int h) {
+        paintDrivingPath(g, w, h, 1);
+    }
+
+    private static void paintDrivingPathBoth(Graphics2D g, int w, int h) {
+        setup(g, w);
+        paintPathNodes(g, w, h);
+
+        float cy = h * 0.5f;
+        float left = w * 0.22f;
+        float right = w * 0.78f;
+        g.setColor(accent());
+        drawArrow(g, right, cy - h * 0.18f, left, cy - h * 0.18f);
+        g.setColor(new Color(0xF59E0B));
+        drawArrow(g, left, cy + h * 0.18f, right, cy + h * 0.18f);
+    }
+
+    private static void paintDrivingPath(Graphics2D g, int w, int h, int direction) {
+        setup(g, w);
+        paintPathNodes(g, w, h);
+
+        float cy = h * 0.5f;
+        float left = w * 0.2f;
+        float right = w * 0.8f;
+        g.setColor(accent());
+        if (direction < 0) {
+            drawArrow(g, right, cy, left, cy);
+        } else {
+            drawArrow(g, left, cy, right, cy);
+        }
+    }
+
+    private static void paintPathNodes(Graphics2D g, int w, int h) {
+        float cy = h * 0.5f;
+        float radius = w * 0.09f;
+        float[] centers = { w * 0.22f, w * 0.5f, w * 0.78f };
+
+        g.setColor(secondary());
+        g.draw(new Line2D.Float(centers[0], cy, centers[2], cy));
+
+        g.setColor(fg());
+        for (int i = 0; i < centers.length; i++) {
+            float cx = centers[i];
+            if (i == 1) {
+                g.setColor(accent());
+                g.fill(new Ellipse2D.Float(cx - radius, cy - radius, radius * 2, radius * 2));
+                g.setColor(surface());
+                g.fill(new Ellipse2D.Float(cx - radius * 0.32f, cy - radius * 0.32f, radius * 0.64f, radius * 0.64f));
+                g.setColor(accent());
+            } else {
+                g.setColor(fg());
+                g.draw(new Ellipse2D.Float(cx - radius, cy - radius, radius * 2, radius * 2));
+            }
+        }
+    }
+
+    private static void drawArrow(Graphics2D g, float x1, float y1, float x2, float y2) {
+        g.draw(new Line2D.Float(x1, y1, x2, y2));
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float length = (float) Math.sqrt(dx * dx + dy * dy);
+        if (length == 0f) {
+            return;
+        }
+        float ux = dx / length;
+        float uy = dy / length;
+        float arrow = length * 0.16f;
+        float wingX = -uy * arrow * 0.55f;
+        float wingY = ux * arrow * 0.55f;
+        g.draw(new Line2D.Float(x2, y2, x2 - ux * arrow + wingX, y2 - uy * arrow + wingY));
+        g.draw(new Line2D.Float(x2, y2, x2 - ux * arrow - wingX, y2 - uy * arrow - wingY));
     }
 
     private static void paintSaveAll(Graphics2D g, int w, int h) {

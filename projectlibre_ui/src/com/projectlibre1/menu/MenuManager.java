@@ -191,6 +191,9 @@ public class MenuManager {
     public Action getActionFromId(String id) {
 		return menuFactory.getActionFromId(id);
     }
+    public void registerToolButton(String id, AbstractButton button) {
+		toolBarFactory.registerButton(id, button);
+    }
     public String getStringFromAction(Action action) {
 		return menuFactory.getStringFromAction(action);
     }

@@ -155,6 +155,9 @@ public interface MenuActionConstants {
 	public static final String ACTION_NOTES              	  = "Notes";
 	public static final String ACTION_PROJECT_INFORMATION     = "ProjectInformation";
 	public static final String ACTION_WBS_SUMMARY_COLORS      = "WbsSummaryColors";
+	public static final String ACTION_DRIVING_PATH_BACKWARD   = "DrivingPathBackward";
+	public static final String ACTION_DRIVING_PATH_FORWARD    = "DrivingPathForward";
+	public static final String ACTION_DRIVING_PATH_BOTH       = "DrivingPathBoth";
 	public static final String ACTION_TEAM_FILTER		      = "TeamFilter";
 	public static final String ACTION_ENTERPRISE_RESOURCES    = "EnterpriseResources";
 	public static final String ACTION_DOCUMENTS				  = "Documents";

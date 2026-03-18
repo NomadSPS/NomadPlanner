@@ -135,6 +135,13 @@ public class ModernToolBar implements MenuActionConstants {
 
         toolBar.addSeparator();
 
+        // -- Driving path --
+        addStandaloneToggleButton(ACTION_DRIVING_PATH_BACKWARD, "menu24.drivingPathBackward", "Driving Path Backward");
+        addStandaloneToggleButton(ACTION_DRIVING_PATH_FORWARD, "menu24.drivingPathForward", "Driving Path Forward");
+        addStandaloneToggleButton(ACTION_DRIVING_PATH_BOTH, "menu24.drivingPathBoth", "Driving Path Backward + Forward");
+
+        toolBar.addSeparator();
+
         // -- Search --
         addButton(ACTION_FIND, "menu24.find", "Find");
 
@@ -192,6 +199,7 @@ public class ModernToolBar implements MenuActionConstants {
         }
 
         toolBar.add(btn);
+        menuManager.registerToolButton(actionId, btn);
     }
 
     private void addToggleButton(String actionId, String iconKey, String tooltip,
@@ -220,6 +228,33 @@ public class ModernToolBar implements MenuActionConstants {
 
         group.add(btn);
         toolBar.add(btn);
+        menuManager.registerToolButton(actionId, btn);
+    }
+
+    private void addStandaloneToggleButton(String actionId, String iconKey, String tooltip) {
+        Action action = menuManager.getActionFromId(actionId);
+        JToggleButton btn;
+        if (action != null) {
+            btn = new JToggleButton(action);
+        } else {
+            btn = new JToggleButton();
+            btn.setEnabled(false);
+        }
+        btn.setText(null);
+        btn.setToolTipText(tooltip);
+        btn.setFocusable(false);
+        btn.putClientProperty("JButton.buttonType", "roundRect");
+        btn.setMargin(new java.awt.Insets(4, 4, 4, 4));
+
+        javax.swing.Icon icon = getScaledIcon(iconKey);
+        if (icon != null) {
+            btn.setIcon(icon);
+        } else {
+            btn.setText(tooltip.length() > 2 ? tooltip.substring(0, 2) : tooltip);
+        }
+
+        toolBar.add(btn);
+        menuManager.registerToolButton(actionId, btn);
     }
 
     /**

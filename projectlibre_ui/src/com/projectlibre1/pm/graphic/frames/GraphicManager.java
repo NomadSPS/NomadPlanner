@@ -1001,6 +1001,9 @@ public class GraphicManager implements  FrameHolder, NamedFrameListener, WindowS
 		actionsMap.addHandler(ACTION_PROJECT_INFORMATION, new ProjectInformationAction());
 		actionsMap.addHandler(ACTION_PROJECTS_DIALOG, new ProjectsDialogAction());
 		actionsMap.addHandler(ACTION_WBS_SUMMARY_COLORS, new WbsSummaryColorsAction());
+		actionsMap.addHandler(ACTION_DRIVING_PATH_BACKWARD, new DrivingPathAction(DocumentFrame.DrivingPathMode.BACKWARD));
+		actionsMap.addHandler(ACTION_DRIVING_PATH_FORWARD, new DrivingPathAction(DocumentFrame.DrivingPathMode.FORWARD));
+		actionsMap.addHandler(ACTION_DRIVING_PATH_BOTH, new DrivingPathAction(DocumentFrame.DrivingPathMode.BOTH));
 		actionsMap.addHandler(ACTION_TEAM_FILTER, new TeamFilterAction());
 		actionsMap.addHandler(ACTION_DOCUMENTS, new DocumentsAction());
 		actionsMap.addHandler(ACTION_INFORMATION, new InformationAction());
@@ -1192,6 +1195,32 @@ public class GraphicManager implements  FrameHolder, NamedFrameListener, WindowS
 		public void actionPerformed(ActionEvent arg0) {
 			setMeAsLastGraphicManager();
 			WbsSummaryColorsDialog.showDialog(GraphicManager.this);
+		}
+	}
+
+	public class DrivingPathAction extends MenuActionsMap.DocumentMenuAction {
+		private static final long serialVersionUID = 1L;
+		private final DocumentFrame.DrivingPathMode mode;
+
+		public DrivingPathAction(DocumentFrame.DrivingPathMode mode) {
+			this.mode = mode;
+		}
+
+		public void actionPerformed(ActionEvent arg0) {
+			setMeAsLastGraphicManager();
+			if (!isDocumentActive()) {
+				return;
+			}
+			currentFrame.toggleDrivingPathMode(mode);
+			Object currentImpl = currentFrame.getSelectedImpl();
+			setButtonState(currentImpl, currentFrame.getProject());
+		}
+
+		protected boolean allowed(boolean enable) {
+			if (enable == false)
+				return true;
+			return currentFrame != null
+				&& (currentFrame.canUseDrivingPathActions() || currentFrame.isDrivingPathModeActive());
 		}
 	}
 
@@ -1863,7 +1892,7 @@ public class GraphicManager implements  FrameHolder, NamedFrameListener, WindowS
 		if (Environment.isPlugin()) return;
        actionsMap.setEnabledDocumentMenuActions(enable);
         if (getCurrentFrame() != null) {
-        	getCurrentFrame().getFilterToolBarManager().setEnabled(enable);
+        	getCurrentFrame().getFilterToolBarManager().setEnabled(enable && !getCurrentFrame().isDrivingPathModeActive());
         }
         if (topTabs != null)
         	topTabs.setTrackingEnabled(enable && isDocumentWritable());
@@ -2170,6 +2199,25 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
 
 	protected boolean resourceType=false;
 	protected boolean taskType=false;
+	void clearDrivingPathModesExcept(DocumentFrame owner) {
+		for (Iterator iterator = frameList.iterator(); iterator.hasNext();) {
+			DocumentFrame frame = (DocumentFrame) iterator.next();
+			if (frame != null && frame != owner && frame.isDrivingPathModeActive()) {
+				frame.clearDrivingPathMode();
+			}
+		}
+	}
+
+	void syncDrivingPathActionState() {
+		DocumentFrame.DrivingPathMode mode = DocumentFrame.DrivingPathMode.NONE;
+		if (currentFrame != null) {
+			mode = currentFrame.getDrivingPathMode();
+		}
+		getMenuManager().setActionSelected(ACTION_DRIVING_PATH_BACKWARD, mode == DocumentFrame.DrivingPathMode.BACKWARD);
+		getMenuManager().setActionSelected(ACTION_DRIVING_PATH_FORWARD, mode == DocumentFrame.DrivingPathMode.FORWARD);
+		getMenuManager().setActionSelected(ACTION_DRIVING_PATH_BOTH, mode == DocumentFrame.DrivingPathMode.BOTH);
+	}
+
 	public void setTaskInformation(boolean taskType,boolean resourceType){
 		this.taskType=taskType;
 		this.resourceType=resourceType;
@@ -2266,6 +2314,12 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
 		Field f = FieldDictionary.getInstance().getActionField(ACTION_DOCUMENTS);
 		getMenuManager().setActionVisible(ACTION_DOCUMENTS,currentFrame != null && f != null);
 		getMenuManager().setActionEnabled(ACTION_DOCUMENTS,currentFrame != null && isEnabledFieldAction(ACTION_DOCUMENTS,  currentFrame.getProject()));
+		boolean drivingPathEnabled = currentFrame != null
+			&& (currentFrame.canUseDrivingPathActions() || currentFrame.isDrivingPathModeActive());
+		getMenuManager().setActionEnabled(ACTION_DRIVING_PATH_BACKWARD, drivingPathEnabled);
+		getMenuManager().setActionEnabled(ACTION_DRIVING_PATH_FORWARD, drivingPathEnabled);
+		getMenuManager().setActionEnabled(ACTION_DRIVING_PATH_BOTH, drivingPathEnabled);
+		syncDrivingPathActionState();
 
 
 	}

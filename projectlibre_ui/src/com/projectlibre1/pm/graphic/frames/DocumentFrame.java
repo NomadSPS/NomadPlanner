@@ -61,10 +61,13 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
@@ -114,14 +117,18 @@ import com.projectlibre1.field.Field;
 import com.projectlibre1.grouping.core.Node;
 import com.projectlibre1.grouping.core.NodeList;
 import com.projectlibre1.grouping.core.model.NodeModel;
+import com.projectlibre1.grouping.core.transform.ViewConfiguration;
 import com.projectlibre1.grouping.core.transform.ViewTransformer;
+import com.projectlibre1.grouping.core.transform.filtering.DrivingPathFilter;
 import com.projectlibre1.grouping.core.transform.filtering.NodeFilter;
 import com.projectlibre1.grouping.core.transform.filtering.NotAssignmentFilter;
 import com.projectlibre1.grouping.core.transform.filtering.ResourceInTeamFilter;
+import com.projectlibre1.grouping.core.transform.filtering.SelectionFilter;
 import com.projectlibre1.job.JobQueue;
 import com.projectlibre1.pm.calendar.CalendarService;
 import com.projectlibre1.pm.calendar.HasCalendar;
 import com.projectlibre1.pm.calendar.WorkingCalendar;
+import com.projectlibre1.pm.dependency.Dependency;
 import com.projectlibre1.pm.dependency.DependencyService;
 import com.projectlibre1.pm.resource.ResourceImpl;
 import com.projectlibre1.pm.task.Portfolio;
@@ -148,6 +155,19 @@ import com.projectlibre1.workspace.WorkspaceSetting;
 public class DocumentFrame extends NamedFrame implements
 		SelectionNodeListener, UndoableEditListener, MenuActionConstants, ObjectEvent.Listener, ProjectListener, SavableToWorkspace, ObjectSelectionListener {
 	private static final long serialVersionUID = 2075764134837908178L;
+	public static enum DrivingPathMode {
+		NONE,
+		BACKWARD,
+		FORWARD,
+		BOTH
+	}
+	private static final String[] DRIVING_PATH_VIEW_NAMES = {
+		ACTION_GANTT,
+		ACTION_NETWORK,
+		ACTION_WBS,
+		ACTION_TASK_USAGE_DETAIL,
+		ACTION_TASK_USAGE
+	};
 	protected MainView mainView;
 	protected GanttView ganttView;
 	protected UsageDetailView taskUsageDetailView;
@@ -179,6 +199,10 @@ public class DocumentFrame extends NamedFrame implements
 	FilterToolBarManager filterToolBarManager = null;
 	JobQueue jobQueue = null;
 	private JRadioButtonMenuItem menuItem = null;
+	private DrivingPathMode drivingPathMode = DrivingPathMode.NONE;
+	private Task drivingPathAnchorTask = null;
+	private final Map<String, NodeFilter> drivingPathOriginalHiddenFilters = new HashMap<String, NodeFilter>();
+	private final Map<String, DrivingPathFilter> drivingPathFilters = new HashMap<String, DrivingPathFilter>();
 	public GraphicManager getGraphicManager() {
 		return graphicManager;
 	}
@@ -759,6 +783,8 @@ public class DocumentFrame extends NamedFrame implements
 		menuManager.setActionSelected(viewName,true);
 		lastTopButton = viewName;
 		setComboBoxesViewName(view.getViewName());
+		if (isDrivingPathModeActive() && !view.showsTasks())
+			clearDrivingPathMode();
 		getGraphicManager().setTaskInformation(view.showsTasks(),view.showsResources());
 		refreshUndoButtons();
 		getGraphicManager().setEnabledDocumentMenuActions(true);
@@ -893,6 +919,8 @@ public class DocumentFrame extends NamedFrame implements
 		Component bottom = mainView.getBottomComponent();
 		if (bottom != null && bottom instanceof SelectionNodeListener)
 			((SelectionNodeListener) bottom).selectionChanged(e);
+		if (isDrivingPathModeActive())
+			refreshDrivingPathModeForSelection();
 		graphicManager.selectionChanged(e);
 	}
 
@@ -1052,6 +1080,202 @@ public class DocumentFrame extends NamedFrame implements
 
 	private ArrayList<ResourceInTeamFilter> resourcesInTeamFilters=new ArrayList<ResourceInTeamFilter>();
 
+	public DrivingPathMode getDrivingPathMode() {
+		return drivingPathMode;
+	}
+
+	public boolean isDrivingPathModeActive() {
+		return drivingPathMode != DrivingPathMode.NONE;
+	}
+
+	public boolean canUseDrivingPathActions() {
+		return getSelectedDrivingPathTask() != null;
+	}
+
+	public void toggleDrivingPathMode(DrivingPathMode mode) {
+		if (mode == null || mode == DrivingPathMode.NONE) {
+			clearDrivingPathMode();
+			return;
+		}
+		if (drivingPathMode == mode) {
+			clearDrivingPathMode();
+			return;
+		}
+		Task selectedTask = getSelectedDrivingPathTask();
+		if (selectedTask == null) {
+			clearDrivingPathMode();
+			return;
+		}
+		graphicManager.clearDrivingPathModesExcept(this);
+		applyDrivingPathMode(mode, selectedTask);
+	}
+
+	void clearDrivingPathMode() {
+		if (!isDrivingPathModeActive() && drivingPathOriginalHiddenFilters.isEmpty()) {
+			updateDrivingPathUiState();
+			return;
+		}
+		for (String viewName : DRIVING_PATH_VIEW_NAMES) {
+			ViewTransformer transformer = getDrivingPathTransformer(viewName);
+			transformer.setHiddenFilter(drivingPathOriginalHiddenFilters.get(viewName));
+			transformer.update();
+		}
+		drivingPathMode = DrivingPathMode.NONE;
+		drivingPathAnchorTask = null;
+		drivingPathOriginalHiddenFilters.clear();
+		drivingPathFilters.clear();
+		refreshRestoredSelectionFilters();
+		refreshDrivingPathViews();
+		updateDrivingPathUiState();
+	}
+
+	void refreshDrivingPathModeForSelection() {
+		if (!isDrivingPathModeActive()) {
+			updateDrivingPathUiState();
+			return;
+		}
+		Task selectedTask = getSelectedDrivingPathTask();
+		if (selectedTask == null) {
+			clearDrivingPathMode();
+			return;
+		}
+		applyDrivingPathMode(drivingPathMode, selectedTask);
+	}
+
+	private void applyDrivingPathMode(DrivingPathMode mode, Task anchorTask) {
+		Set<Long> taskIds = resolveDrivingPathTaskIds(anchorTask, mode);
+		for (String viewName : DRIVING_PATH_VIEW_NAMES) {
+			ViewTransformer transformer = getDrivingPathTransformer(viewName);
+			if (!drivingPathOriginalHiddenFilters.containsKey(viewName)) {
+				drivingPathOriginalHiddenFilters.put(viewName, transformer.getHiddenFilter());
+			}
+			DrivingPathFilter filter = drivingPathFilters.get(viewName);
+			if (filter == null) {
+				NodeFilter baseFilter = drivingPathOriginalHiddenFilters.get(viewName);
+				boolean includeAssignments = ACTION_TASK_USAGE.equals(viewName) || ACTION_TASK_USAGE_DETAIL.equals(viewName);
+				filter = new DrivingPathFilter(baseFilter, includeAssignments);
+				drivingPathFilters.put(viewName, filter);
+			}
+			filter.setTaskPath(project, taskIds);
+			transformer.setHiddenFilter(filter);
+			transformer.update();
+		}
+		drivingPathMode = mode;
+		drivingPathAnchorTask = anchorTask;
+		refreshDrivingPathViews();
+		updateDrivingPathUiState();
+	}
+
+	private ViewTransformer getDrivingPathTransformer(String viewName) {
+		return ViewConfiguration.getView(viewName).getTransform();
+	}
+
+	private void refreshRestoredSelectionFilters() {
+		ViewTransformer transformer = getDrivingPathTransformer(ACTION_TASK_USAGE);
+		if (transformer.getHiddenFilter() instanceof SelectionFilter && taskUsageView != null && lastSelectionEvent != null) {
+			taskUsageView.selectionChanged(lastSelectionEvent);
+		}
+	}
+
+	private void refreshDrivingPathViews() {
+		repaintTaskTables();
+		if (taskUsageDetailView != null) {
+			taskUsageDetailView.forceUpdateOfTimeSpreadSheet();
+		}
+		if (taskUsageView != null) {
+			taskUsageView.forceUpdateOfTimeSpreadSheet();
+		}
+		if (activeTopView != null) {
+			((Component) activeTopView).revalidate();
+			((Component) activeTopView).repaint();
+		}
+		if (activeBottomView != null) {
+			((Component) activeBottomView).revalidate();
+			((Component) activeBottomView).repaint();
+		}
+	}
+
+	private void updateDrivingPathUiState() {
+		if (filterToolBarManager != null) {
+			filterToolBarManager.setEnabled(!isDrivingPathModeActive());
+		}
+		if (graphicManager != null) {
+			graphicManager.syncDrivingPathActionState();
+		}
+	}
+
+	private Task getSelectedDrivingPathTask() {
+		if (activeTopView == null || !activeTopView.showsTasks()) {
+			return null;
+		}
+		List selectedImpls = getSelectedImpls(true);
+		if (selectedImpls == null || selectedImpls.size() != 1) {
+			return null;
+		}
+		Object selected = selectedImpls.get(0);
+		if (!(selected instanceof Task)) {
+			return null;
+		}
+		Task task = (Task) selected;
+		return task.isSummary() ? null : task;
+	}
+
+	private Set<Long> resolveDrivingPathTaskIds(Task anchorTask, DrivingPathMode mode) {
+		Set<Long> taskIds = new HashSet<Long>();
+		taskIds.add(anchorTask.getUniqueId());
+		if (mode == DrivingPathMode.BACKWARD || mode == DrivingPathMode.BOTH) {
+			collectDrivingPredecessors(anchorTask, taskIds, new HashSet<Long>());
+		}
+		if (mode == DrivingPathMode.FORWARD || mode == DrivingPathMode.BOTH) {
+			collectDrivenSuccessors(anchorTask, taskIds, new HashSet<Long>());
+		}
+		return taskIds;
+	}
+
+	private void collectDrivingPredecessors(Task task, Set<Long> taskIds, Set<Long> visitedTaskIds) {
+		if (task == null || !visitedTaskIds.add(task.getUniqueId())) {
+			return;
+		}
+		for (Iterator iterator = task.getPredecessorList().iterator(); iterator.hasNext();) {
+			Object next = iterator.next();
+			if (!(next instanceof Dependency)) {
+				continue;
+			}
+			Dependency dependency = (Dependency) next;
+			if (!dependency.isDriving()) {
+				continue;
+			}
+			Task predecessor = (Task) dependency.getPredecessor();
+			if (predecessor == null) {
+				continue;
+			}
+			taskIds.add(predecessor.getUniqueId());
+			collectDrivingPredecessors(predecessor, taskIds, visitedTaskIds);
+		}
+	}
+
+	private void collectDrivenSuccessors(Task task, Set<Long> taskIds, Set<Long> visitedTaskIds) {
+		if (task == null || !visitedTaskIds.add(task.getUniqueId())) {
+			return;
+		}
+		for (Iterator iterator = task.getSuccessorList().iterator(); iterator.hasNext();) {
+			Object next = iterator.next();
+			if (!(next instanceof Dependency)) {
+				continue;
+			}
+			Dependency dependency = (Dependency) next;
+			if (!dependency.isDriving()) {
+				continue;
+			}
+			Task successor = (Task) dependency.getSuccessor();
+			if (successor == null) {
+				continue;
+			}
+			taskIds.add(successor.getUniqueId());
+			collectDrivenSuccessors(successor, taskIds, visitedTaskIds);
+		}
+	}
+
 	public Closure addTransformerInitializationClosure(){
 		return new Closure(){
 			public void execute(Object arg) {
@@ -1067,6 +1291,7 @@ public class DocumentFrame extends NamedFrame implements
 	}
 
 	void onClose() {
+		clearDrivingPathMode();
 		project = null; // get rid of reference
 	}
 
@@ -1108,6 +1333,7 @@ public class DocumentFrame extends NamedFrame implements
 
 	public void cleanUp() {
 		System.out.println("Document Frame Cleanup");
+		clearDrivingPathMode();
 		if (project != null) {
 			project.removeProjectListener(this);
 			project.removeObjectListener(this);

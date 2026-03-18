@@ -111,6 +111,14 @@ public class ExtToolBarFactory extends ToolBarFactory {
     		result = (ArrayList) toolButtons.get(id);
     	return result;
     }
+    public void registerButton(String id, AbstractButton button) {
+    	if (id == null || button == null)
+    		return;
+    	String buttonId = getActionStringFromId(id);
+    	if (buttonId != null)
+    		toolButtons.put(buttonId, button);
+    	toolButtons.put(id, button);
+    }
     public String getActionStringFromId(String id) {
     	String result = null;
     	try {
