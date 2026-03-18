@@ -318,6 +318,7 @@ public class TaskInformationDialog extends InformationDialog {
     					,(object==null)?new AssociationList():((Task)object).getPredecessorList()
 						,new DependencyNodeModelDataFactory()
 						, 0);
+		((SpreadSheetModel)predecessorsSpreadSheet.getModel()).fireUpdateAll();
     }
 
 	public JComponent createSuccessorsPanel() {

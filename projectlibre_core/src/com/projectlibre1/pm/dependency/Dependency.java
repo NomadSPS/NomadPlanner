@@ -62,6 +62,7 @@ import com.projectlibre1.datatype.DurationFormat;
 import com.projectlibre1.document.Document;
 import com.projectlibre1.pm.calendar.WorkCalendar;
 import com.projectlibre1.pm.criticalpath.ScheduleWindow;
+import com.projectlibre1.pm.criticalpath.TaskSchedule;
 import com.projectlibre1.pm.task.BelongsToDocument;
 import com.projectlibre1.pm.task.HasProject;
 import com.projectlibre1.pm.task.Project;
@@ -298,6 +299,30 @@ public class Dependency implements Association, BelongsToDocument, DataObject {
 
 	public long getSuccessorIdNumber() {
 		return ((Task)successor).getId();
+	}
+
+	public boolean isDriving() {
+		if (disabled || successor == null) {
+			return false;
+		}
+
+		Task successorTask = (Task)successor;
+		TaskSchedule currentSchedule = successorTask.getCurrentSchedule();
+		if (currentSchedule == null) {
+			return false;
+		}
+
+		long successorDependencyDate = currentSchedule.getDependencyDate();
+		if (successorDependencyDate == NEEDS_CALCULATION || successorDependencyDate == 0) {
+			return false;
+		}
+
+		long dependencyDate = getDate(currentSchedule.isForward());
+		if (dependencyDate == NEEDS_CALCULATION || dependencyDate != successorDependencyDate) {
+			return false;
+		}
+
+		return currentSchedule.getBegin() == successorDependencyDate;
 	}
 
 	//DataObject

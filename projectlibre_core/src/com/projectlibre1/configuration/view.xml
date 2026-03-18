@@ -856,6 +856,7 @@
 			<column>Field.predecessorId</column>
 			<column>Field.dependencyType</column>
 			<column>Field.lag</column>
+			<column>Field.driving</column>
 		</columns>
 	</spreadsheet>
 	<spreadsheet id="Spreadsheet.Dependency.successors" category="dependencySpreadsheet" actionListId="ActionList.dependency">

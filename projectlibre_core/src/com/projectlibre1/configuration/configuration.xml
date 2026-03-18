@@ -701,6 +701,8 @@
 			<field property="successorIdNumber" id="Field.successorId"
 				readOnly="true" referencedObjectProperty="successor" />
 			<field property="lag" id="Field.lag" duration="true" />
+			<field property="driving" id="Field.driving"
+				readOnly="true" />
 			<field property="dependencyType"
 				id="Field.dependencyType">
 				<select name="taskType">
