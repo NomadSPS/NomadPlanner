@@ -58,6 +58,7 @@ package com.projectlibre1.graphic.configuration.shape;
 
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.Locale;
 
 
 /**
@@ -374,9 +375,21 @@ public class Colors {
 	}
 
 	public static Color findColor(String key) {
-		Color found = (Color) getColors().get(key);
-		if (found == null) // if not a standard color, then assume that it needs to be parsed by color
-			found = Color.getColor(key);
+		if (key == null) {
+			return null;
+		}
+		String normalizedKey = key.trim();
+		Color found = (Color) getColors().get(normalizedKey);
+		if (found == null) {
+			found = (Color) getColors().get(normalizedKey.toUpperCase(Locale.ENGLISH));
+		}
+		if (found == null) {
+			try {
+				found = Color.decode(normalizedKey);
+			} catch (NumberFormatException ex) {
+				found = null;
+			}
+		}
 		return found;
 	}
 

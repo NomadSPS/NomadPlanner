@@ -1043,6 +1043,7 @@ public class DocumentFrame extends NamedFrame implements
 				if (filter!=null){
 					filter.setFilterTeam(getGraphicManager().getPreferences().isShowProjectResourcesOnly());
 				}
+				repaintTaskTables();
 			//}
 
 		}
@@ -1164,6 +1165,24 @@ public class DocumentFrame extends NamedFrame implements
 			reportView
 		};
 		ArrayUtils.forAllDo(views,c);
+	}
+
+	private void repaintTaskTables() {
+		forAllViews(new Closure() {
+			public void execute(Object value) {
+				if (!(value instanceof BaseView)) {
+					return;
+				}
+				SpreadSheet spreadSheet = ((BaseView) value).getSpreadSheet();
+				if (spreadSheet == null) {
+					return;
+				}
+				spreadSheet.revalidate();
+				spreadSheet.repaint();
+			}
+		});
+		revalidate();
+		repaint();
 	}
 
 	public void restoreWorkspace(WorkspaceSetting w, int context) {

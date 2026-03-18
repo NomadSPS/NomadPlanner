@@ -75,9 +75,11 @@ import javax.swing.text.JTextComponent;
 
 import com.projectlibre1.pm.graphic.ChangeAwareTextField;
 import com.projectlibre1.pm.graphic.IconManager;
+import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.pm.graphic.model.cache.GraphicNode;
 import com.projectlibre1.pm.graphic.spreadsheet.SpreadSheetParams;
 import com.projectlibre1.pm.graphic.spreadsheet.common.CommonSpreadSheetModel;
+import com.projectlibre1.pm.task.Task;
 import com.projectlibre1.graphic.configuration.CellFormat;
 /**
  *
@@ -296,7 +298,7 @@ public class NameCellComponent extends JPanel {
 		if (model.getCellProperties(node).isCompositeIcon()) {
 			component.setCollapsed(node.isCollapsed());
 		} else {
-			component.setLeaf(node.isVoid());
+			component.setLeaf(node.isVoid() || shouldHideLeafOutlineDot(node));
 		}
 		FontManager.setComponentFont(model.getCellProperties(node),component);
 		component.doLayout();
@@ -319,10 +321,22 @@ public class NameCellComponent extends JPanel {
 		if (format.isCompositeIcon()) {
 			component.setCollapsed(node.isCollapsed());
 		} else {
-			component.setLeaf(node.isVoid());
+			component.setLeaf(node.isVoid() || shouldHideLeafOutlineDot(node));
 		}
 		FontManager.setComponentFont(format,component);
 		return component;
+	}
+
+	private static boolean shouldHideLeafOutlineDot(GraphicNode node) {
+		if ((node == null) || node.isVoid() || node.isSummary() || node.isLazyParent() || node.isAssignment() || node.isGroup()) {
+			return false;
+		}
+		Object impl = node.getNode().getImpl();
+		if (!(impl instanceof Task)) {
+			return false;
+		}
+		GraphicManager graphicManager = GraphicManager.getInstance();
+		return (graphicManager != null) && graphicManager.getPreferences().isHideLeafOutlineDots();
 	}
 
 

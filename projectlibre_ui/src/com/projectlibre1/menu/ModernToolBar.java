@@ -130,6 +130,11 @@ public class ModernToolBar implements MenuActionConstants {
 
         toolBar.addSeparator();
 
+        // -- Summary colors --
+        addButton(ACTION_WBS_SUMMARY_COLORS, "menu24.palette", "WBS Summary Colors");
+
+        toolBar.addSeparator();
+
         // -- Search --
         addButton(ACTION_FIND, "menu24.find", "Find");
 

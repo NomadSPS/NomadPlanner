@@ -55,11 +55,37 @@
  *******************************************************************************/
 package com.projectlibre1.preference;
 
+import java.awt.Color;
+import java.util.prefs.Preferences;
+
 import com.projectlibre1.document.ObjectEvent;
 import com.projectlibre1.document.ObjectEventManager;
 
 public class GlobalPreferences {
+	public static final int WBS_COLOR_LEVEL_COUNT = 8;
+	private static final String KEY_SHOW_ALL_RESOURCES = "showAllResources";
+	private static final String KEY_HIDE_LEAF_OUTLINE_DOTS = "hideLeafOutlineDots";
+	private static final String KEY_WBS_BACKGROUND_PREFIX = "wbsLevelBackground.";
+	private static final String KEY_WBS_FOREGROUND_PREFIX = "wbsLevelForeground.";
+
+	private final transient Preferences storedPreferences = Preferences.userNodeForPackage(GlobalPreferences.class);
 	protected transient boolean showAllResources = true;
+	protected transient boolean hideLeafOutlineDots = true;
+	private final transient String[] wbsLevelBackgrounds = new String[WBS_COLOR_LEVEL_COUNT];
+	private final transient String[] wbsLevelForegrounds = new String[WBS_COLOR_LEVEL_COUNT];
+
+	public GlobalPreferences() {
+		load();
+	}
+
+	private void load() {
+		showAllResources = storedPreferences.getBoolean(KEY_SHOW_ALL_RESOURCES, true);
+		hideLeafOutlineDots = storedPreferences.getBoolean(KEY_HIDE_LEAF_OUTLINE_DOTS, true);
+		for (int i = 0; i < WBS_COLOR_LEVEL_COUNT; i++) {
+			wbsLevelBackgrounds[i] = normalizeColorHex(storedPreferences.get(KEY_WBS_BACKGROUND_PREFIX + (i + 1), null));
+			wbsLevelForegrounds[i] = normalizeColorHex(storedPreferences.get(KEY_WBS_FOREGROUND_PREFIX + (i + 1), null));
+		}
+	}
 
 	public boolean isShowProjectResourcesOnly() {
 		return !showAllResources;
@@ -68,7 +94,142 @@ public class GlobalPreferences {
 	public void setShowProjectResourcesOnly(boolean showProjectResourcesOnly) {
 		if (showProjectResourcesOnly!=showAllResources) return;
 		this.showAllResources = !showProjectResourcesOnly;
+		storedPreferences.putBoolean(KEY_SHOW_ALL_RESOURCES, this.showAllResources);
 		fireUpdateEvent(this, this);
+	}
+
+	public boolean isHideLeafOutlineDots() {
+		return hideLeafOutlineDots;
+	}
+
+	public void setHideLeafOutlineDots(boolean hideLeafOutlineDots) {
+		if (this.hideLeafOutlineDots == hideLeafOutlineDots) {
+			return;
+		}
+		this.hideLeafOutlineDots = hideLeafOutlineDots;
+		storedPreferences.putBoolean(KEY_HIDE_LEAF_OUTLINE_DOTS, hideLeafOutlineDots);
+		fireUpdateEvent(this, this);
+	}
+
+	public String getWbsLevelBackground(int level) {
+		return getLevelValue(wbsLevelBackgrounds, level);
+	}
+
+	public String getWbsLevelForeground(int level) {
+		return getLevelValue(wbsLevelForegrounds, level);
+	}
+
+	public Color getWbsLevelBackgroundColor(int level) {
+		return decodeColor(getWbsLevelBackground(level));
+	}
+
+	public Color getWbsLevelForegroundColor(int level) {
+		return decodeColor(getWbsLevelForeground(level));
+	}
+
+	public String[] getWbsLevelBackgrounds() {
+		return wbsLevelBackgrounds.clone();
+	}
+
+	public String[] getWbsLevelForegrounds() {
+		return wbsLevelForegrounds.clone();
+	}
+
+	public void setWbsLevelColors(String[] backgrounds, String[] foregrounds) {
+		if ((backgrounds == null) || (foregrounds == null)
+			|| (backgrounds.length != WBS_COLOR_LEVEL_COUNT)
+			|| (foregrounds.length != WBS_COLOR_LEVEL_COUNT)) {
+			throw new IllegalArgumentException("Expected " + WBS_COLOR_LEVEL_COUNT + " WBS color levels");
+		}
+		boolean changed = false;
+		for (int i = 0; i < WBS_COLOR_LEVEL_COUNT; i++) {
+			String normalizedBackground = normalizeColorHex(backgrounds[i]);
+			String normalizedForeground = normalizeColorHex(foregrounds[i]);
+			if (!equals(wbsLevelBackgrounds[i], normalizedBackground)) {
+				wbsLevelBackgrounds[i] = normalizedBackground;
+				storeColor(KEY_WBS_BACKGROUND_PREFIX + (i + 1), normalizedBackground);
+				changed = true;
+			}
+			if (!equals(wbsLevelForegrounds[i], normalizedForeground)) {
+				wbsLevelForegrounds[i] = normalizedForeground;
+				storeColor(KEY_WBS_FOREGROUND_PREFIX + (i + 1), normalizedForeground);
+				changed = true;
+			}
+		}
+		if (changed) {
+			fireUpdateEvent(this, this);
+		}
+	}
+
+	public void clearAllWbsLevelColors() {
+		setWbsLevelColors(new String[WBS_COLOR_LEVEL_COUNT], new String[WBS_COLOR_LEVEL_COUNT]);
+	}
+
+	private void storeColor(String key, String value) {
+		if (value == null) {
+			storedPreferences.remove(key);
+		} else {
+			storedPreferences.put(key, value);
+		}
+	}
+
+	private String getLevelValue(String[] values, int level) {
+		if ((level < 1) || (level > WBS_COLOR_LEVEL_COUNT)) {
+			return null;
+		}
+		return values[level - 1];
+	}
+
+	private static boolean equals(String left, String right) {
+		return (left == null) ? (right == null) : left.equals(right);
+	}
+
+	public static String normalizeColorHex(String value) {
+		if (value == null) {
+			return null;
+		}
+		String trimmed = value.trim();
+		if (trimmed.length() == 0) {
+			return null;
+		}
+		Color color = decodeColor(trimmed);
+		return (color == null) ? null : toColorHex(color);
+	}
+
+	public static Color decodeColor(String value) {
+		String normalized = normalizeColorCandidate(value);
+		if (normalized == null) {
+			return null;
+		}
+		try {
+			return Color.decode(normalized);
+		} catch (NumberFormatException ex) {
+			return null;
+		}
+	}
+
+	public static String toColorHex(Color color) {
+		if (color == null) {
+			return null;
+		}
+		return String.format("#%06X", color.getRGB() & 0xFFFFFF);
+	}
+
+	private static String normalizeColorCandidate(String value) {
+		if (value == null) {
+			return null;
+		}
+		String trimmed = value.trim();
+		if (trimmed.length() == 0) {
+			return null;
+		}
+		if (trimmed.startsWith("#") || trimmed.startsWith("0x") || trimmed.startsWith("0X")) {
+			return trimmed;
+		}
+		if (trimmed.matches("[0-9A-Fa-f]{6}")) {
+			return "#" + trimmed;
+		}
+		return trimmed;
 	}
 	
 	private transient ObjectEventManager objectEventManager = new ObjectEventManager();

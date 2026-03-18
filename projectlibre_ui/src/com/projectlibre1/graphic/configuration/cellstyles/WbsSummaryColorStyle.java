@@ -55,29 +55,35 @@
  *******************************************************************************/
 package com.projectlibre1.graphic.configuration.cellstyles;
 
-import com.projectlibre1.pm.graphic.model.cache.GraphicNode;
 import com.projectlibre1.graphic.configuration.CellFormat;
-import com.projectlibre1.graphic.configuration.CellStyle;
+import com.projectlibre1.pm.graphic.frames.GraphicManager;
+import com.projectlibre1.pm.graphic.model.cache.GraphicNode;
+import com.projectlibre1.preference.GlobalPreferences;
 
-
-public class DefaultCellStyle implements CellStyle {
-	protected CellFormat format=new CellFormat();
-	public DefaultCellStyle(){
-		
+final class WbsSummaryColorStyle {
+	private WbsSummaryColorStyle() {
 	}
-	public CellFormat getCellFormat(Object object) {
-		GraphicNode node=(GraphicNode)object;
-//		CellFormat format=new CellFormat();
-		format.reset();
-		format.setBold(node.isSummary());
-		format.setItalic(node.isAssignment());
-		format.setCompositeIcon(node.isSummary()||node.isValidLazyParent());
-		if (node.getSubprojectLevel()>0) format.setBackground(node.getSubprojectLevel()%2==0?"MULTIPROJET0":"MULTIPROJET1");
-		if (node.isGroup()){
-			if (node.getLevel()==1) format.setBackground("TAN");
-			else format.setBackground("LINEN");
+
+	static void applySummaryColors(GraphicNode node, CellFormat format) {
+		if ((node == null) || !node.isSummary()) {
+			return;
 		}
-		WbsSummaryColorStyle.applySummaryColors(node, format);
-		return format;
+		int level = node.getLevel();
+		if ((level < 1) || (level > GlobalPreferences.WBS_COLOR_LEVEL_COUNT)) {
+			return;
+		}
+		GraphicManager graphicManager = GraphicManager.getInstance();
+		if (graphicManager == null) {
+			return;
+		}
+		GlobalPreferences preferences = graphicManager.getPreferences();
+		String background = preferences.getWbsLevelBackground(level);
+		if (background != null) {
+			format.setBackground(background);
+		}
+		String foreground = preferences.getWbsLevelForeground(level);
+		if (foreground != null) {
+			format.setForeground(foreground);
+		}
 	}
 }

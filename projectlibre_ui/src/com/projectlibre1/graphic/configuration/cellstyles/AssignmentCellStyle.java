@@ -77,6 +77,7 @@ public class AssignmentCellStyle implements CellStyle {
 			else format.setBackground("LINEN");
 		}
 		else format.setBackground("NORMAL_YELLOW");
+		WbsSummaryColorStyle.applySummaryColors(node, format);
 		return format;
 	}
 }

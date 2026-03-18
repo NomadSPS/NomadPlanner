@@ -150,6 +150,7 @@ import com.projectlibre1.dialog.ResourceMappingDialog;
 import com.projectlibre1.dialog.TaskInformationDialog;
 import com.projectlibre1.dialog.TipOfTheDay;
 import com.projectlibre1.dialog.WelcomeDialog;
+import com.projectlibre1.dialog.WbsSummaryColorsDialog;
 import com.projectlibre1.dialog.assignment.AssignmentDialog;
 import com.projectlibre1.dialog.options.CalendarDialogBox;
 import com.projectlibre1.document.Document;
@@ -999,6 +1000,7 @@ public class GraphicManager implements  FrameHolder, NamedFrameListener, WindowS
 		actionsMap.addHandler(ACTION_TIP_OF_THE_DAY, new TipOfTheDayAction());
 		actionsMap.addHandler(ACTION_PROJECT_INFORMATION, new ProjectInformationAction());
 		actionsMap.addHandler(ACTION_PROJECTS_DIALOG, new ProjectsDialogAction());
+		actionsMap.addHandler(ACTION_WBS_SUMMARY_COLORS, new WbsSummaryColorsAction());
 		actionsMap.addHandler(ACTION_TEAM_FILTER, new TeamFilterAction());
 		actionsMap.addHandler(ACTION_DOCUMENTS, new DocumentsAction());
 		actionsMap.addHandler(ACTION_INFORMATION, new InformationAction());
@@ -1182,6 +1184,14 @@ public class GraphicManager implements  FrameHolder, NamedFrameListener, WindowS
 		public void actionPerformed(ActionEvent arg0) {
 			setMeAsLastGraphicManager();
 			ProjectsDialog.show(GraphicManager.this);
+		}
+	}
+
+	public class WbsSummaryColorsAction extends MenuActionsMap.DocumentMenuAction {
+		private static final long serialVersionUID = 1L;
+		public void actionPerformed(ActionEvent arg0) {
+			setMeAsLastGraphicManager();
+			WbsSummaryColorsDialog.showDialog(GraphicManager.this);
 		}
 	}
 

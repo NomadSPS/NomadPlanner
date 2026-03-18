@@ -225,6 +225,7 @@ public class MenuBarFactory implements MenuActionConstants {
         addItem(menu, ACTION_PROJECT_INFORMATION, "Project Information", 0, 0);
         addItem(menu, ACTION_CALENDAR_OPTIONS, "Calendar", 0, 0);
         addItem(menu, ACTION_PROJECTS_DIALOG, "Projects Dialog", 0, 0);
+        addItem(menu, ACTION_WBS_SUMMARY_COLORS, "WBS Summary Colors...", 0, 0);
         menu.addSeparator();
         addItem(menu, ACTION_SAVE_BASELINE, "Save Baseline", 0, 0);
         addItem(menu, ACTION_CLEAR_BASELINE, "Clear Baseline", 0, 0);
