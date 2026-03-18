@@ -26,6 +26,7 @@ package net.sf.mpxj.primavera;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
@@ -56,7 +57,7 @@ public final class DatatypeConverter
          else
          {
             // XER representation: CrkTPqCalki5irI4SJSsRA
-            byte[] data = javax.xml.bind.DatatypeConverter.parseBase64Binary(value + "==");
+            byte[] data = Base64.getDecoder().decode(value + "==");
             long msb = 0;
             long lsb = 0;
 

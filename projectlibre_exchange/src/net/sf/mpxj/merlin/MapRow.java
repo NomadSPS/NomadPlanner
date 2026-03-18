@@ -23,6 +23,7 @@
 
 package net.sf.mpxj.merlin;
 
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -244,7 +245,7 @@ class MapRow implements Row
       String value = getString(name);
       value = value.replace("-", "+").replace("_", "/");
 
-      byte[] data = javax.xml.bind.DatatypeConverter.parseBase64Binary(value + "==");
+      byte[] data = Base64.getDecoder().decode(value + "==");
       long msb = 0;
       long lsb = 0;
 
