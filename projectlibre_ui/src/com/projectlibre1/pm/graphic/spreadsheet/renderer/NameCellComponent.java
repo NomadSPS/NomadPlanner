@@ -58,6 +58,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.image.BufferedImage;
 import java.awt.Point;
 import java.awt.Rectangle;
 
@@ -122,7 +123,7 @@ public class NameCellComponent extends JPanel {
 		if (getComponentCount() != 0)
 			removeAll();
 		leafIcon = IconManager.getIcon("spreadsheet.leaf.icon");
-		emptyLeafIcon = IconManager.getIcon("spreadsheet.emptyleaf.icon");
+		emptyLeafIcon = createTransparentIcon(leafIcon);
 		collapsedIcon = IconManager.getIcon("spreadsheet.collapsed.icon");
 		expandedIcon = IconManager.getIcon("spreadsheet.expanded.icon");
 
@@ -138,6 +139,14 @@ public class NameCellComponent extends JPanel {
 		iconLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		add(iconLabel);
 		add(textComponent);
+	}
+
+	private ImageIcon createTransparentIcon(ImageIcon referenceIcon) {
+		if (referenceIcon == null) {
+			return null;
+		}
+		BufferedImage image = new BufferedImage(referenceIcon.getIconWidth(), referenceIcon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+		return new ImageIcon(image);
 	}
 
 
