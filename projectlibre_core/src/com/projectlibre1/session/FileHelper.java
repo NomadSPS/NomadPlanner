@@ -131,11 +131,11 @@ public class FileHelper {
 		    	boolean isAllowed;
 				String n = f.getName().toLowerCase();
 		    	if (save) isAllowed=false;
-		    	else isAllowed=n.endsWith(".mpp") || n.endsWith(".mpx");			
+		    	else isAllowed=n.endsWith(".mpp") || n.endsWith(".mpx") || n.endsWith(".xer");			
 		    	return f.isDirectory()||isAllowed;
 		    }
 		    public String getDescription(){
-		    	return Messages.getString("File.microsoft")+" (*.mpp, *.mpx)";
+		    	return Messages.getString("File.microsoft")+" (*.mpp, *.mpx, *.xer)";
 		    }
 	
 		};
@@ -144,11 +144,11 @@ public class FileHelper {
 		    	boolean isAllowed;
 				String n = f.getName().toLowerCase();
 		    	if (save) isAllowed=n.endsWith(".xml");
-		    	else isAllowed=n.endsWith(".xml");			
+		    	else isAllowed=n.endsWith(".xml") || n.endsWith(".pmxml");			
 		    	return f.isDirectory()||isAllowed;
 		    }
 		    public String getDescription(){
-		    	return Messages.getString("File.microsoftXML")+" (*.xml)";
+		    	return Messages.getString("File.microsoftXML")+" (*.xml, *.pmxml)";
 		    }
 	
 		};
@@ -215,7 +215,7 @@ public class FileHelper {
     public static boolean isFileNameAllowed(String fileName,boolean save) {
 		String n = fileName.toLowerCase();
     	if (save) return n.endsWith(".xml")||n.endsWith("."+DEFAULT_FILE_EXTENSION);
-    	else return n.endsWith(".xml")||n.endsWith(".mpp")||n.endsWith(".mpx")||n.endsWith(".planner")||n.endsWith("."+DEFAULT_FILE_EXTENSION) || n.endsWith(".mpx");
+	else return n.endsWith(".xml")||n.endsWith(".pmxml")||n.endsWith(".mpp")||n.endsWith(".mpx")||n.endsWith(".xer")||n.endsWith(".planner")||n.endsWith("."+DEFAULT_FILE_EXTENSION);
 	}
 
     public static String getFileExtension(String fileName) {
@@ -257,7 +257,7 @@ public class FileHelper {
     	fileName=fileName.toLowerCase();
     	if (fileName.endsWith(DEFAULT_FILE_EXTENSION))
     		return PROJECTLIBRE_FILE_TYPE;
-    	if (fileName.endsWith("mpp")||fileName.endsWith("mpx")||fileName.endsWith("xml")||fileName.endsWith("planner"))
+    	if (fileName.endsWith("mpp")||fileName.endsWith("mpx")||fileName.endsWith("xer")||fileName.endsWith("xml")||fileName.endsWith("pmxml")||fileName.endsWith("planner"))
     			return MSP_FILE_TYPE;
     	return 0;
     }

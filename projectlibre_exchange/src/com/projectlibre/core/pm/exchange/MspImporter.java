@@ -55,11 +55,14 @@
  *******************************************************************************/
 package com.projectlibre.core.pm.exchange;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import net.sf.mpxj.Duration;
 import net.sf.mpxj.ProjectCalendar;
@@ -70,6 +73,8 @@ import net.sf.mpxj.mpp.MPPReader;
 import net.sf.mpxj.mpx.MPXReader;
 import net.sf.mpxj.mspdi.schema.TimephasedDataType;
 import net.sf.mpxj.planner.PlannerReader;
+import net.sf.mpxj.primavera.PrimaveraPMFileReader;
+import net.sf.mpxj.primavera.PrimaveraXERFileReader;
 import net.sf.mpxj.reader.AbstractProjectReader;
 
 import com.projectlibre.core.pm.exchange.converters.mpx.MpxAssignmentConverter;
@@ -147,22 +152,17 @@ public class MspImporter {
 	
 	
 	public void parseProject(InputStream in, String extension) throws Exception {
+		BufferedInputStream buffered = null;
 		try {
-			if (extension.equals("xml") 
-					|| extension.equals("pod")){
-				reader=new ImprovedMSPDIReader();
-				state.setMspdi(true);
-			} else if (extension.equals("mpp"))
-				reader=new MPPReader();
-			else if (extension.equals("mpx"))
-				reader=new MPXReader();
-			else if (extension.equals("planner"))
-				reader = new PlannerReader();
-			mpxProjectFile = reader.read(in);
+			buffered = new BufferedInputStream(in);
+			reader = createReader(buffered, extension);
+			mpxProjectFile = reader.read(buffered);
 			state.setMpxProjectFile(mpxProjectFile);
 		
 		} finally {
-			if (in!=null)
+			if (buffered!=null)
+				buffered.close();
+			else if (in!=null)
 				in.close();
 		}	
 
@@ -171,8 +171,38 @@ public class MspImporter {
 	protected void parseProject(String fileName) throws Exception {
 		fileName=fileName.trim();
 		int extensionPosition=fileName.lastIndexOf("."); 
-		String extension = extensionPosition==-1 ? "xml" : fileName.substring(extensionPosition+1).toLowerCase();
+		String extension = extensionPosition==-1 ? "xml" : fileName.substring(extensionPosition+1).toLowerCase(Locale.ROOT);
 		parseProject(new FileInputStream(fileName), extension);
+	}
+
+	protected AbstractProjectReader createReader(BufferedInputStream in, String extension) throws IOException {
+		String normalizedExtension = extension == null ? "xml" : extension.toLowerCase(Locale.ROOT);
+		state.setMspdi(false);
+		if (normalizedExtension.equals("xml") || normalizedExtension.equals("pod")) {
+			if (isPrimaveraPMXml(in))
+				return new PrimaveraPMFileReader();
+			state.setMspdi(true);
+			return new ImprovedMSPDIReader();
+		}
+		if (normalizedExtension.equals("pmxml"))
+			return new PrimaveraPMFileReader();
+		if (normalizedExtension.equals("xer"))
+			return new PrimaveraXERFileReader();
+		if (normalizedExtension.equals("mpp"))
+			return new MPPReader();
+		if (normalizedExtension.equals("mpx"))
+			return new MPXReader();
+		if (normalizedExtension.equals("planner"))
+			return new PlannerReader();
+		throw new IllegalArgumentException("Unsupported import file type: " + normalizedExtension);
+	}
+
+	protected boolean isPrimaveraPMXml(BufferedInputStream in) throws IOException {
+		in.mark(4096);
+		byte[] buffer = in.readNBytes(4096);
+		in.reset();
+		String header = new String(buffer);
+		return header.contains("<APIBusinessObjects");
 	}
 	
 	
