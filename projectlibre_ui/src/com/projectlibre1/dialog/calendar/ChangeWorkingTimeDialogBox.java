@@ -139,7 +139,6 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
     }
     private UndoController undoController;
     private Form form;
-    WorkingHours defaultWorkingHours = WorkingHours.getDefault();
     boolean unsaved = false;
     DefaultListModel calendarListModel;
     JList calendarList;
@@ -412,13 +411,14 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 		    public void actionPerformed(ActionEvent e){
 			    CalendarService service=CalendarService.getInstance();
 			    WorkingCalendar wc=form.getCalendar();
+			    WorkingHours defaultHours = getDefaultWorkingHours();
 
-		        setWorkingHours(defaultWorkingHours);
+		        setWorkingHours(defaultHours);
 			    WorkingCalendar copy = wc.makeScratchCopy();
 
 			    try {
-                    service.setDaysWorkingHours(copy,sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays(),defaultWorkingHours);
-                    service.setDaysWorkingHours(wc,sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays(),defaultWorkingHours);
+                    service.setDaysWorkingHours(copy,sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays(),defaultHours);
+                    service.setDaysWorkingHours(wc,sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays(),defaultHours);
     			    dirtyWorkingHours = false;
     			    updateWorkingHours();
                     updateView();
@@ -767,6 +767,11 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 	//	cal.roll(GregorianCalendar.HOUR_OF_DAY,true);
 		return cal.getTimeInMillis();
 	}
+
+	private WorkingHours getDefaultWorkingHours() {
+		return (WorkingHours) WorkingHours.getDefault().clone();
+	}
+
 	private void setWorkingHours(WorkingHours hours){
 //	    System.out.println("setting working hours" + hours);
 		// if not working treat as empty
