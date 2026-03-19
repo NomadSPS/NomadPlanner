@@ -57,6 +57,7 @@ package com.projectlibre1.dialog.calendar;
 
 import com.projectlibre1.contrib.calendar.ContribIntervals;
 import com.projectlibre1.contrib.calendar.JXXMonthView;
+import org.jdesktop.swing.calendar.DateSpan;
 
 
 /**
@@ -82,6 +83,16 @@ public class CalendarView extends JXXMonthView {
 
 	public Intervals getSelectedFixedIntervals(){
 		return new Intervals(super.getSelectedIntervals());
+	}
+
+	public void selectSingleDate(long date) {
+		clearSelection();
+		select(new DateSpan(date, date));
+	}
+
+	public void selectSingleWeekDay(int calendarDayNum) {
+		clearSelection();
+		selectWeekDay(calendarDayNum - 1);
 	}
 
 

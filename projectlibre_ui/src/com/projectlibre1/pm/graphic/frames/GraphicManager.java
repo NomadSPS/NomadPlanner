@@ -2101,7 +2101,20 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
 
 	void doCalendarOptionsDialog() {
 		finishAnyOperations();
-		CalendarDialogBox.getInstance(getFrame(), CalendarOption.getInstance()).doModal();
+		CalendarOption option = CalendarOption.getInstance();
+		if (getCurrentFrame() != null && getCurrentFrame().getProject() != null
+				&& getCurrentFrame().getProject().getCalendarOption() != null) {
+			option = getCurrentFrame().getProject().getCalendarOption();
+		}
+		CalendarDialogBox dialog = CalendarDialogBox.getInstance(getFrame(), option);
+		if (dialog.doModal()) {
+			CalendarOption updated = CalendarOption.getNewInstance();
+			dialog.getForm().copyToOption(updated);
+			CalendarOption.setInstance(updated);
+			if (getCurrentFrame() != null && getCurrentFrame().getProject() != null) {
+				getCurrentFrame().getProject().setCalendarOption(updated);
+			}
+		}
 	}
 
 
@@ -3045,6 +3058,8 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
 	}
 
 	public boolean isEditingMasterProject() {
+		if (currentFrame == null)
+			return false;
 		Project currentProject=currentFrame.getProject();
 		if (currentProject == null)
 			return false;

@@ -211,7 +211,7 @@ public class MenuBarFactory implements MenuActionConstants {
         addItem(menu, ACTION_INFORMATION, "Information", 0, 0);
         addItem(menu, ACTION_NOTES, "Notes", 0, 0);
         menu.addSeparator();
-        addItem(menu, ACTION_CHANGE_WORKING_TIME, "Change Working Time", 0, 0);
+        addItem(menu, ACTION_CHANGE_WORKING_TIME, "Calendar", 0, 0);
 
         return menu;
     }
@@ -223,7 +223,8 @@ public class MenuBarFactory implements MenuActionConstants {
         menu.setMnemonic(KeyEvent.VK_P);
 
         addItem(menu, ACTION_PROJECT_INFORMATION, "Project Information", 0, 0);
-        addItem(menu, ACTION_CALENDAR_OPTIONS, "Calendar", 0, 0);
+        addItem(menu, ACTION_CHANGE_WORKING_TIME, "Calendar", 0, 0);
+        addItem(menu, ACTION_CALENDAR_OPTIONS, "Working Time", 0, 0);
         addItem(menu, ACTION_PROJECTS_DIALOG, "Projects Dialog", 0, 0);
         addItem(menu, ACTION_WBS_SUMMARY_COLORS, "WBS Summary Colors...", 0, 0);
         menu.addSeparator();

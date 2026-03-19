@@ -181,7 +181,7 @@ public class CalendarDialogBox extends AbstractDialog{
     	}
 
     	private CalendarDialogBox(Frame owner, CalendarOption option) {
-    		super(owner, Messages.getString("CalendarDialogBox.DurationSettings"), true); //$NON-NLS-1$
+    		super(owner, Messages.getString("CalendarDialogBox.WorkingTime"), true); //$NON-NLS-1$
    			this.form = new Form(option);
    			addDocHelp("Calendar_Options");
     	}

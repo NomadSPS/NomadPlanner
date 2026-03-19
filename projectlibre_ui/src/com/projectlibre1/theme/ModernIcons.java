@@ -118,6 +118,8 @@ public class ModernIcons {
         PAINTERS.put("menu24.assignResources", ModernIcons::paintViewResources);
         PAINTERS.put("menu24.scrollToTask", ModernIcons::paintScrollToTask);
         PAINTERS.put("menu24.refresh", ModernIcons::paintRefresh);
+        PAINTERS.put("menu24.calendarManager", ModernIcons::paintCalendar);
+        PAINTERS.put("menu24.workingTime", ModernIcons::paintWorkingTime);
         PAINTERS.put("menu24.wbsSummaryColors", ModernIcons::paintWbsSummaryColors);
         PAINTERS.put("menu24.drivingPathBackward", ModernIcons::paintDrivingPathBackward);
         PAINTERS.put("menu24.drivingPathForward", ModernIcons::paintDrivingPathForward);
@@ -144,6 +146,8 @@ public class ModernIcons {
         PAINTERS.put("menu.notes", ModernIcons::paintNotes);
         PAINTERS.put("menu.link", ModernIcons::paintLink);
         PAINTERS.put("menu.unlink", ModernIcons::paintUnlink);
+        PAINTERS.put("menu.calendarManager", ModernIcons::paintCalendar);
+        PAINTERS.put("menu.workingTime", ModernIcons::paintWorkingTime);
         PAINTERS.put("menu.changeWorkingTime", ModernIcons::paintCalendar);
         PAINTERS.put("menu.assignResources", ModernIcons::paintViewResources);
         PAINTERS.put("WbsSummaryColors", ModernIcons::paintWbsSummaryColors);
@@ -684,6 +688,37 @@ public class ModernIcons {
                 g.fill(new Ellipse2D.Float(dx - dotR, dy - dotR, dotR * 2, dotR * 2));
             }
         }
+    }
+
+    private static void paintWorkingTime(Graphics2D g, int w, int h) {
+        setup(g, w);
+        float cx = w * 0.42f;
+        float cy = h * 0.52f;
+        float r = w * 0.24f;
+
+        g.setColor(fg());
+        g.draw(new Ellipse2D.Float(cx - r, cy - r, r * 2, r * 2));
+
+        g.setColor(accent());
+        g.draw(new Line2D.Float(cx, cy, cx, cy - r * 0.58f));
+        g.draw(new Line2D.Float(cx, cy, cx + r * 0.48f, cy));
+
+        g.setColor(secondary());
+        g.draw(new Line2D.Float(cx, cy - r * 0.92f, cx, cy - r * 0.72f));
+        g.draw(new Line2D.Float(cx + r * 0.92f, cy, cx + r * 0.72f, cy));
+        g.draw(new Line2D.Float(cx, cy + r * 0.92f, cx, cy + r * 0.72f));
+        g.draw(new Line2D.Float(cx - r * 0.92f, cy, cx - r * 0.72f, cy));
+
+        float panelX = w * 0.62f;
+        float panelY = h * 0.28f;
+        float panelW = w * 0.2f;
+        float panelH = h * 0.46f;
+        g.setColor(fg());
+        g.draw(new RoundRectangle2D.Float(panelX, panelY, panelW, panelH, 3, 3));
+        g.setColor(accent());
+        g.draw(new Line2D.Float(panelX + panelW * 0.22f, panelY + panelH * 0.28f, panelX + panelW * 0.78f, panelY + panelH * 0.28f));
+        g.draw(new Line2D.Float(panelX + panelW * 0.22f, panelY + panelH * 0.5f, panelX + panelW * 0.62f, panelY + panelH * 0.5f));
+        g.draw(new Line2D.Float(panelX + panelW * 0.22f, panelY + panelH * 0.72f, panelX + panelW * 0.7f, panelY + panelH * 0.72f));
     }
 
     private static void paintMultiProject(Graphics2D g, int w, int h) {

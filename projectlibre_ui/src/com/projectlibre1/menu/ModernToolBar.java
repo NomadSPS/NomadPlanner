@@ -112,6 +112,8 @@ public class ModernToolBar implements MenuActionConstants {
         // -- Info --
         addButton(ACTION_INFORMATION, "menu24.taskInformation", "Information");
         addButton(ACTION_NOTES, "menu24.notes", "Notes");
+        addButton(ACTION_CHANGE_WORKING_TIME, "menu24.calendarManager", "Calendar");
+        addButton(ACTION_CALENDAR_OPTIONS, "menu24.workingTime", "Working Time");
 
         toolBar.addSeparator();
 

@@ -367,21 +367,10 @@ public class DocumentFrame extends NamedFrame implements
 
 	void doChangeWorkingTimeDialog(boolean restrict) {
 		finishAnyOperations();
-		Object rowObject = getSelectedImpl();
-		WorkingCalendar wc = null;
-		List documentCalendars = null;
-		if (rowObject instanceof HasCalendar) {
-			wc = (WorkingCalendar) ((HasCalendar) rowObject).getWorkCalendar();
-			if (rowObject instanceof ResourceImpl) {
-				documentCalendars = ((ResourceImpl) rowObject)
-						.getResourcePool().extractCalendars();
-			}
-		}
-		if (wc == null)
-			wc = (WorkingCalendar) getProject().getWorkCalendar();
-		CalendarService service = CalendarService.getInstance();
-
-
+		WorkingCalendar wc = (WorkingCalendar) getProject().getWorkCalendar();
+		List documentCalendars = getProject().getResourcePool() == null
+				? null
+				: getProject().getResourcePool().extractCalendars();
 		ChangeWorkingTimeDialogBox dlg = ChangeWorkingTimeDialogBox
 				.getInstance(getGraphicManager().getFrame(), project,wc, documentCalendars,restrict,this.getUndoController());
 		dlg.doModal();
