@@ -63,6 +63,8 @@ import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
@@ -170,13 +172,140 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
     List documentCalendars;
     List projectCalendars;
     WorkingCalendar editedCalendar;
+    WorkingCalendar originalCalendarSnapshot;
     boolean restrict;
     boolean syncingCalendarSelection = false;
     boolean syncingSelectionLists = false;
     JLabel selectionSummaryText;
-	private Project project;
+    private Project project;
 	private String lastInvalidCalendarMessage;
 	private String lastInvalidCalendarContext;
+	private String lastInvalidCalendarKey;
+	private boolean syncingCalendarSelectionChanges = false;
+	private SelectionTarget currentSelectionTarget = SelectionTarget.none();
+
+	private static final class SelectionTarget {
+		private enum Kind {
+			NONE, WEEKDAY, DATE_RANGE, EXCEPTION_DAY
+		}
+
+		private final Kind kind;
+		private final Intervals intervals;
+		private final boolean[] weekSelection;
+		private final int calendarDayNum;
+		private final long exceptionStart;
+
+		private SelectionTarget(Kind kind, Intervals intervals, boolean[] weekSelection, int calendarDayNum, long exceptionStart) {
+			this.kind = kind;
+			this.intervals = copyIntervals(intervals);
+			this.weekSelection = copyWeekSelection(weekSelection);
+			this.calendarDayNum = calendarDayNum;
+			this.exceptionStart = exceptionStart;
+		}
+
+		static SelectionTarget none() {
+			return new SelectionTarget(Kind.NONE, null, null, -1, -1L);
+		}
+
+		static SelectionTarget weekday(int calendarDayNum) {
+			boolean[] selectedWeekDays = new boolean[7];
+			if (calendarDayNum >= 1 && calendarDayNum <= 7) {
+				selectedWeekDays[calendarDayNum - 1] = true;
+			}
+			return new SelectionTarget(Kind.WEEKDAY, null, selectedWeekDays, calendarDayNum, -1L);
+		}
+
+		static SelectionTarget exceptionDay(long date) {
+			Intervals intervals = new Intervals(null);
+			intervals.add(new CalendarInterval(date, date));
+			return new SelectionTarget(Kind.EXCEPTION_DAY, intervals, null, -1, date);
+		}
+
+		static SelectionTarget dateRange(Intervals intervals) {
+			return new SelectionTarget(Kind.DATE_RANGE, intervals, null, -1, -1L);
+		}
+
+		static SelectionTarget fromCalendar(CalendarView calendarView) {
+			if (calendarView == null) {
+				return none();
+			}
+			boolean[] selectedWeekDays = copyWeekSelection(calendarView.getSelectedWeekDays());
+			Intervals selectedIntervals = new Intervals(null);
+			selectedIntervals.addAll(calendarView.getSelectedFixedIntervals());
+
+			int selectedWeekdayCount = 0;
+			int selectedWeekday = -1;
+			for (int i = 0; i < selectedWeekDays.length; i++) {
+				if (!selectedWeekDays[i]) {
+					continue;
+				}
+				selectedWeekdayCount++;
+				selectedWeekday = i + 1;
+			}
+
+			if (selectedWeekdayCount > 0 && selectedIntervals.size() == 0) {
+				return new SelectionTarget(Kind.WEEKDAY, null, selectedWeekDays, selectedWeekdayCount == 1 ? selectedWeekday : -1, -1L);
+			}
+			if (selectedWeekdayCount == 0 && selectedIntervals.size() == 1) {
+				HasStartAndEnd selected = (HasStartAndEnd) selectedIntervals.first();
+				if (selected.getStart() == selected.getEnd()) {
+					return new SelectionTarget(Kind.EXCEPTION_DAY, selectedIntervals, null, -1, selected.getStart());
+				}
+			}
+			if (selectedIntervals.size() > 0) {
+				return new SelectionTarget(Kind.DATE_RANGE, selectedIntervals, null, -1, -1L);
+			}
+			return none();
+		}
+
+		Kind getKind() {
+			return kind;
+		}
+
+		Intervals getIntervals() {
+			return copyIntervals(intervals);
+		}
+
+		boolean[] getWeekSelection() {
+			return copyWeekSelection(weekSelection);
+		}
+
+		int getCalendarDayNum() {
+			return calendarDayNum;
+		}
+
+		long getExceptionStart() {
+			return exceptionStart;
+		}
+
+		boolean isNone() {
+			return kind == Kind.NONE;
+		}
+
+		boolean isSingleWeekday() {
+			return kind == Kind.WEEKDAY && calendarDayNum != -1;
+		}
+
+		boolean isExceptionDay() {
+			return kind == Kind.EXCEPTION_DAY;
+		}
+
+		private static Intervals copyIntervals(Intervals source) {
+			Intervals copy = new Intervals(null);
+			if (source != null) {
+				copy.addAll(source);
+			}
+			return copy;
+		}
+
+		private static boolean[] copyWeekSelection(boolean[] source) {
+			boolean[] copy = new boolean[7];
+			if (source != null) {
+				System.arraycopy(source, 0, copy, 0, Math.min(source.length, copy.length));
+			}
+			return copy;
+		}
+	}
 
 
     private void setEditable(boolean editable) {
@@ -204,6 +333,12 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 		this.project=project;
 		this.restrict = restrict;
 		this.undoController = undoController;
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				onCancel();
+			}
+		});
 //		ProjectFactory projectFactory = ((MainFrame)owner).getProjectFactory();
 		ProjectFactory projectFactory = GraphicManager.getInstance(this).getProjectFactory();
 		ArrayList projCals = projectFactory.getPortfolio().extractCalendars();
@@ -225,8 +360,10 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 
 	private void setCal(WorkingCalendar cal) {
 		editedCalendar = cal;
+		originalCalendarSnapshot = CalendarService.getInstance().makeScratchCopy(cal);
 		form.setCalendar(CalendarService.getInstance().makeScratchCopy(cal));
 		resetInvalidCalendarMessage();
+		setCurrentSelectionTarget(SelectionTarget.none());
 		syncCalendarSelection();
 	}
 
@@ -312,6 +449,132 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 		for (int i=0; i < 7; i++)
 			lastWeekSelection[i] = false;
 	}
+
+	private void setCurrentSelectionTarget(SelectionTarget selectionTarget) {
+		currentSelectionTarget = selectionTarget == null ? SelectionTarget.none() : selectionTarget;
+		materializeSelectionTargetSnapshot(currentSelectionTarget);
+	}
+
+	private void materializeSelectionTargetSnapshot(SelectionTarget selectionTarget) {
+		clearLastSelection();
+		if (selectionTarget == null) {
+			return;
+		}
+		lastSelection.addAll(selectionTarget.getIntervals());
+		boolean[] selectedWeekDays = selectionTarget.getWeekSelection();
+		for (int i = 0; i < lastWeekSelection.length; i++) {
+			lastWeekSelection[i] = selectedWeekDays[i];
+		}
+	}
+
+	private SelectionTarget resolveSelectionTarget() {
+		if (currentSelectionTarget == null || currentSelectionTarget.isNone()) {
+			SelectionTarget derivedSelection = SelectionTarget.fromCalendar(sdCalendar);
+			if (!derivedSelection.isNone()) {
+				setCurrentSelectionTarget(derivedSelection);
+			}
+		}
+		return currentSelectionTarget == null ? SelectionTarget.none() : currentSelectionTarget;
+	}
+
+	private void syncSelectionWidgetsFromCurrentTarget() {
+		syncSelectionWidgets(currentSelectionTarget);
+	}
+
+	private void syncSelectionWidgets(SelectionTarget selectionTarget) {
+		SelectionTarget target = selectionTarget == null ? SelectionTarget.none() : selectionTarget;
+		syncingSelectionLists = true;
+		syncingCalendarSelectionChanges = true;
+		try {
+			if (sdCalendar != null) {
+				if (target.isNone()) {
+					sdCalendar.clearAllSelection();
+				} else if (target.isSingleWeekday()) {
+					sdCalendar.selectSingleWeekDay(target.getCalendarDayNum());
+				} else if (target.isExceptionDay()) {
+					Calendar calendar = DateTime.calendarInstance();
+					calendar.setTimeInMillis(target.getExceptionStart());
+					calendar.set(Calendar.DATE, 1);
+					sdCalendar.setFirstDisplayedDate(calendar.getTimeInMillis());
+					sdCalendar.selectSingleDate(target.getExceptionStart());
+				} else {
+					sdCalendar.selectIntervals(target.getIntervals());
+				}
+			}
+			if (weekDayList != null) {
+				weekDayList.clearSelection();
+				if (target.isSingleWeekday()) {
+					int weekDayIndex = findWeekDayModelIndex(target.getCalendarDayNum());
+					if (weekDayIndex != -1) {
+						weekDayList.setSelectedIndex(weekDayIndex);
+					}
+				}
+			}
+			if (exceptionList != null) {
+				exceptionList.clearSelection();
+				if (target.isExceptionDay()) {
+					int exceptionIndex = findExceptionModelIndex(target.getExceptionStart());
+					if (exceptionIndex != -1) {
+						exceptionList.setSelectedIndex(exceptionIndex);
+					}
+				}
+			}
+		} finally {
+			syncingCalendarSelectionChanges = false;
+			syncingSelectionLists = false;
+		}
+	}
+
+	private boolean commitDirtySelectionBeforeNavigation() {
+		if (!dirtyWorkingHours) {
+			return true;
+		}
+		if (savePendingWorkingHoursForNavigation()) {
+			return true;
+		}
+		syncSelectionWidgetsFromCurrentTarget();
+		updateSelectionSummary();
+		return false;
+	}
+
+	private void navigateToSelectionTarget(SelectionTarget selectionTarget, boolean updateDisplayedMonth) {
+		if (selectionTarget == null) {
+			return;
+		}
+		if (!commitDirtySelectionBeforeNavigation()) {
+			return;
+		}
+		syncingCalendarSelectionChanges = true;
+		try {
+			if (selectionTarget.isNone()) {
+				sdCalendar.clearAllSelection();
+			} else if (selectionTarget.isSingleWeekday()) {
+				sdCalendar.selectSingleWeekDay(selectionTarget.getCalendarDayNum());
+			} else if (selectionTarget.isExceptionDay()) {
+				if (updateDisplayedMonth) {
+					Calendar calendar = DateTime.calendarInstance();
+					calendar.setTimeInMillis(selectionTarget.getExceptionStart());
+					calendar.set(Calendar.DATE, 1);
+					sdCalendar.setFirstDisplayedDate(calendar.getTimeInMillis());
+				}
+				sdCalendar.selectSingleDate(selectionTarget.getExceptionStart());
+			} else {
+				sdCalendar.selectIntervals(selectionTarget.getIntervals());
+			}
+		} finally {
+			syncingCalendarSelectionChanges = false;
+		}
+		setCurrentSelectionTarget(selectionTarget);
+		updateWorkingHours();
+	}
+
+	private void updateSelectionTargetFromCalendarView() {
+		if (!commitDirtySelectionBeforeNavigation()) {
+			return;
+		}
+		setCurrentSelectionTarget(SelectionTarget.fromCalendar(sdCalendar));
+		updateWorkingHours();
+	}
 	protected void initControls() {
 	    calendarListModel = new DefaultListModel();
 	    calendarList = new JList(calendarListModel);
@@ -376,39 +639,51 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 
 	    defaultWorkingTime.addActionListener(new ActionListener(){
 		    public void actionPerformed(ActionEvent e){
+		    	SelectionTarget selectionTarget = resolveSelectionTarget();
+		    	if (selectionTarget.isNone()) {
+		    		return;
+		    	}
 		        setWorkingHours(null);
 			    CalendarService service=CalendarService.getInstance();
 			    WorkingCalendar wc=form.getCalendar();
-			    service.makeDefaultDays(wc,sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays());
+			    service.makeDefaultDays(wc,selectionTarget.getIntervals(), selectionTarget.getWeekSelection());
+			    unsaved = true;
 			    dirtyWorkingHours = false;
 			    updateWorkingHours();
 			    updateView();
-			    clearLastSelection();
 
 		    }});
 
 	    nonWorking.addActionListener(new ActionListener(){
 		    public void actionPerformed(ActionEvent e){
+		    	SelectionTarget selectionTarget = resolveSelectionTarget();
+		    	if (selectionTarget.isNone()) {
+		    		return;
+		    	}
 		        setWorkingHours(null);
 			    CalendarService service=CalendarService.getInstance();
 			    WorkingCalendar wc=form.getCalendar();
 			    WorkingCalendar copy = wc.makeScratchCopy();
 			    try {
 			    	// try on copy first
-					service.setDaysNonWorking(copy,sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays());
-				    service.setDaysNonWorking(wc,sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays());
+					service.setDaysNonWorking(copy,selectionTarget.getIntervals(), selectionTarget.getWeekSelection());
+				    service.setDaysNonWorking(wc,selectionTarget.getIntervals(), selectionTarget.getWeekSelection());
 				} catch (InvalidCalendarException e1) {
-					showInvalidCalendarMessageOnce(e1.getMessage(), sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays(), true);
+					showInvalidCalendarMessageOnce(e1.getMessage(), selectionTarget.getIntervals(), selectionTarget.getWeekSelection(), true);
 					return;
 				}
+			    unsaved = true;
 			    dirtyWorkingHours = false;
 			    updateWorkingHours();
 			    updateView();
-	            clearLastSelection();
 		    }});
 
 	    working.addActionListener(new ActionListener(){
 		    public void actionPerformed(ActionEvent e){
+		    	SelectionTarget selectionTarget = resolveSelectionTarget();
+		    	if (selectionTarget.isNone()) {
+		    		return;
+		    	}
 			    CalendarService service=CalendarService.getInstance();
 			    WorkingCalendar wc=form.getCalendar();
 			    WorkingHours defaultHours = getDefaultWorkingHours();
@@ -417,28 +692,29 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 			    WorkingCalendar copy = wc.makeScratchCopy();
 
 			    try {
-                    service.setDaysWorkingHours(copy,sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays(),defaultHours);
-                    service.setDaysWorkingHours(wc,sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays(),defaultHours);
+                    service.setDaysWorkingHours(copy,selectionTarget.getIntervals(), selectionTarget.getWeekSelection(),defaultHours);
+                    service.setDaysWorkingHours(wc,selectionTarget.getIntervals(), selectionTarget.getWeekSelection(),defaultHours);
+                    unsaved = true;
     			    dirtyWorkingHours = false;
     			    updateWorkingHours();
                     updateView();
                 } catch (WorkRangeException e1) {
                     e1.printStackTrace();
                 } catch (InvalidCalendarException e2) {
-                	showInvalidCalendarMessageOnce(e2.getMessage(), sdCalendar.getSelectedFixedIntervals(), sdCalendar.getSelectedWeekDays(), true);
+                	showInvalidCalendarMessageOnce(e2.getMessage(), selectionTarget.getIntervals(), selectionTarget.getWeekSelection(), true);
                 	return;
 				}
-                clearLastSelection();
 		    }});
 	    sdCalendar.addPropertyChangeListener(new PropertyChangeListener(){
-	        final CalendarService service=CalendarService.getInstance();
 	        public void propertyChange(PropertyChangeEvent e){
 //	        	System.out.println("propery change");
 	            String property=e.getPropertyName();
 	            if ("lastDisplayedDate".equals(property)||"firstDisplayedDate".equals(property)){ //$NON-NLS-1$ //$NON-NLS-2$
 	            	updateView();
 	            }else if ("selectedDates".equals(property)){ //$NON-NLS-1$
-	            	updateWorkingHours();
+	            	if (!syncingCalendarSelectionChanges) {
+	            		updateSelectionTargetFromCalendarView();
+	            	}
 	            }
 	        }
 	    });
@@ -462,13 +738,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 			if (row == null) {
 				return;
 			}
-			if (!savePendingWorkingHoursForNavigation()) {
-				syncSelectionListsFromCalendar();
-				return;
-			}
-			exceptionList.clearSelection();
-			sdCalendar.selectSingleWeekDay(row.getCalendarDayNum());
-			updateWorkingHours();
+			navigateToSelectionTarget(SelectionTarget.weekday(row.getCalendarDayNum()), false);
 		});
 		exceptionList.addListSelectionListener(e -> {
 			if (e.getValueIsAdjusting() || syncingSelectionLists) {
@@ -478,18 +748,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 			if (row == null) {
 				return;
 			}
-			if (!savePendingWorkingHoursForNavigation()) {
-				syncSelectionListsFromCalendar();
-				return;
-			}
-			weekDayList.clearSelection();
-			long date = row.getWorkDay().getStart();
-			Calendar calendar = DateTime.calendarInstance();
-			calendar.setTimeInMillis(date);
-			calendar.set(Calendar.DATE, 1);
-			sdCalendar.setFirstDisplayedDate(calendar.getTimeInMillis());
-			sdCalendar.selectSingleDate(date);
-			updateWorkingHours();
+			navigateToSelectionTarget(SelectionTarget.exceptionDay(row.getWorkDay().getStart()), true);
 		});
 
 		setEditable(isCalEditable(form.getCalendar()));
@@ -516,7 +775,12 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 
 	}
 	private boolean saveWorkingHoursChanges(boolean saveCalendar, boolean refreshView){
+		SelectionTarget selectionTarget = resolveSelectionTarget();
 	    try {
+	    	if (selectionTarget.isNone()) {
+	    		dirtyWorkingHours = false;
+	    		return true;
+	    	}
 	        WorkingHours hours=new WorkingHours();
 	        String startS,endS;
 	        for (int i=0;i<timeStart.length;i++){
@@ -536,9 +800,10 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 		    CalendarService service=CalendarService.getInstance();
 		    WorkingCalendar wc=form.getCalendar();
 		    WorkingCalendar copy = wc.makeScratchCopy();
-		    service.setDaysWorkingHours(copy,lastSelection,lastWeekSelection,hours);
-		    service.setDaysWorkingHours(wc,lastSelection,lastWeekSelection,hours);
+		    service.setDaysWorkingHours(copy,selectionTarget.getIntervals(),selectionTarget.getWeekSelection(),hours);
+		    service.setDaysWorkingHours(wc,selectionTarget.getIntervals(),selectionTarget.getWeekSelection(),hours);
 		    unsaved = false;
+		    dirtyWorkingHours = false;
 
 		    if (saveCalendar) {
 		    	saveCalendar();
@@ -554,7 +819,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 	        Alert.warn(Messages.getString("Message.badTimeFormat"),this); //$NON-NLS-1$
 	        return false;
 	    } catch (InvalidCalendarException e) {
-	    	showInvalidCalendarMessageOnce(e.getMessage(), copyIntervals(lastSelection), copyWeekSelection(lastWeekSelection), false);
+	    	showInvalidCalendarMessageOnce(e.getMessage(), selectionTarget.getIntervals(), selectionTarget.getWeekSelection(), false);
 	    	return false;
 		}
 	    if (refreshView) {
@@ -574,6 +839,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 
 		service.assignCalendar(editedCalendar,wc);
 		service.saveAndUpdate(editedCalendar);
+		originalCalendarSnapshot = service.makeScratchCopy(editedCalendar);
 
 	}
 	private boolean savePendingWorkingHoursForNavigation() {
@@ -606,19 +872,14 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 	private void refreshEditedSelectionLabelsQuietly() {
 		syncingSelectionLists = true;
 		try {
-			if (lastSelection.size() == 0) {
-				int selectedCalendarDayNum = getSingleSelectedCalendarDayNum();
-				if (selectedCalendarDayNum != -1) {
-					refreshWeekDayRow(selectedCalendarDayNum);
-					return;
-				}
+			SelectionTarget selectionTarget = resolveSelectionTarget();
+			if (selectionTarget.isSingleWeekday()) {
+				refreshWeekDayRow(selectionTarget.getCalendarDayNum());
+				return;
 			}
-			if (lastSelection.size() == 1) {
-				HasStartAndEnd selected = (HasStartAndEnd) lastSelection.first();
-				if (selected.getStart() == selected.getEnd()) {
-					refreshExceptionRow(selected.getStart());
-					return;
-				}
+			if (selectionTarget.isExceptionDay()) {
+				refreshExceptionRow(selectionTarget.getExceptionStart());
+				return;
 			}
 			refreshSelectionLists();
 		} finally {
@@ -629,15 +890,18 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 	private void resetInvalidCalendarMessage() {
 		lastInvalidCalendarMessage = null;
 		lastInvalidCalendarContext = null;
+		lastInvalidCalendarKey = null;
 	}
 
 	private void showInvalidCalendarMessageOnce(String message, Intervals intervals, boolean[] selectedWeekDays, boolean error) {
 		String context = buildInvalidCalendarContext(intervals, selectedWeekDays);
-		if (message != null && message.equals(lastInvalidCalendarMessage)) {
+		String messageKey = String.valueOf(message) + "|" + context;
+		if (messageKey.equals(lastInvalidCalendarKey)) {
 			return;
 		}
 		lastInvalidCalendarMessage = message;
 		lastInvalidCalendarContext = context;
+		lastInvalidCalendarKey = messageKey;
 		if (error) {
 			Alert.error(message, this);
 		} else {
@@ -692,17 +956,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 	}
 
 	private int getSingleSelectedCalendarDayNum() {
-		int selectedCalendarDayNum = -1;
-		for (int i = 0; i < lastWeekSelection.length; i++) {
-			if (!lastWeekSelection[i]) {
-				continue;
-			}
-			if (selectedCalendarDayNum != -1) {
-				return -1;
-			}
-			selectedCalendarDayNum = i + 1;
-		}
-		return selectedCalendarDayNum;
+		return resolveSelectionTarget().isSingleWeekday() ? resolveSelectionTarget().getCalendarDayNum() : -1;
 	}
 
 	private void refreshWeekDayRow(int calendarDayNum) {
@@ -803,10 +1057,6 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
                 	timeEnd[j].setText(""); //$NON-NLS-1$
                 }
             }
-            clearLastSelection();
-            lastSelection.addAll(sdCalendar.getSelectedFixedIntervals());
-            for (int i =0; i <7; i++)
-            	lastWeekSelection[i] = sdCalendar.getSelectedWeekDays()[i];
 	    }
 
 	    //Call at the end because setText causes dirtyWorkingHours to become true
@@ -864,7 +1114,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 	    sdCalendar.setFlaggedWeekDates(flaggedWeekDates);
 	    refreshSelectionLists();
 	    updateSelectionSummary();
-	    syncSelectionListsFromCalendar();
+	    syncSelectionListsFromCurrentTarget();
 	   //System.out.println(service.dump(wc));
 	}
 
@@ -881,12 +1131,8 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 	private void updateWorkingHours() {
 //		System.out.println("updating working hours");
         final CalendarService service=CalendarService.getInstance();
-
-		 if (dirtyWorkingHours && !savePendingWorkingHoursForNavigation()){
-	        return;
-	    }
-
-        DayDescriptor day=service.getDay(form.getCalendar(),sdCalendar.getSelectedFixedIntervals(),sdCalendar.getSelectedWeekDays());
+        SelectionTarget selectionTarget = resolveSelectionTarget();
+        DayDescriptor day=service.getDay(form.getCalendar(),selectionTarget.getIntervals(),selectionTarget.getWeekSelection());
         if (day==null){
 //            System.out.println("none");
             ChangeWorkingTimeDialogBox.this.datesSetting.setSelected(ChangeWorkingTimeDialogBox.this.unknownWorkingTime.getModel(),true);
@@ -905,7 +1151,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
             setWorkingHours(day.getWorkingHours());
         }
         updateSelectionSummary();
-        syncSelectionListsFromCalendar();
+        syncSelectionListsFromCurrentTarget();
 	}
 
 	private void refreshSelectionLists() {
@@ -985,8 +1231,9 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 		if (selectionSummaryText == null) {
 			return;
 		}
-		boolean[] selectedWeekDays = sdCalendar.getSelectedWeekDays();
-		Intervals intervals = sdCalendar.getSelectedFixedIntervals();
+		SelectionTarget selectionTarget = resolveSelectionTarget();
+		boolean[] selectedWeekDays = selectionTarget.getWeekSelection();
+		Intervals intervals = selectionTarget.getIntervals();
 		int selectedWeekdayCount = 0;
 		int selectedWeekday = -1;
 		for (int i = 0; i < selectedWeekDays.length; i++) {
@@ -1035,42 +1282,24 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 		}
 	}
 
-	private void syncSelectionListsFromCalendar() {
+	private void syncSelectionListsFromCurrentTarget() {
 		if (weekDayList == null || exceptionList == null) {
 			return;
 		}
+		SelectionTarget selectionTarget = resolveSelectionTarget();
 		syncingSelectionLists = true;
 		try {
 			weekDayList.clearSelection();
 			exceptionList.clearSelection();
-			boolean[] selectedWeekDays = sdCalendar.getSelectedWeekDays();
-			Intervals intervals = sdCalendar.getSelectedFixedIntervals();
-			int selectedWeekdayCount = 0;
-			int selectedWeekday = -1;
-			for (int i = 0; i < selectedWeekDays.length; i++) {
-				if (selectedWeekDays[i]) {
-					selectedWeekdayCount++;
-					selectedWeekday = i + 1;
+			if (selectionTarget.isSingleWeekday()) {
+				int weekDayIndex = findWeekDayModelIndex(selectionTarget.getCalendarDayNum());
+				if (weekDayIndex != -1) {
+					weekDayList.setSelectedIndex(weekDayIndex);
 				}
-			}
-			if (selectedWeekdayCount == 1 && intervals.size() == 0) {
-				for (int i = 0; i < weekDayListModel.getSize(); i++) {
-					WeekDayRow row = (WeekDayRow) weekDayListModel.get(i);
-					if (row.getCalendarDayNum() == selectedWeekday) {
-						weekDayList.setSelectedIndex(i);
-						break;
-					}
-				}
-			} else if (selectedWeekdayCount == 0 && intervals.size() == 1) {
-				HasStartAndEnd selected = (HasStartAndEnd) intervals.first();
-				if (selected.getStart() == selected.getEnd()) {
-					for (int i = 0; i < exceptionListModel.getSize(); i++) {
-						ExceptionRow row = (ExceptionRow) exceptionListModel.get(i);
-						if (row.getWorkDay().getStart() == selected.getStart()) {
-							exceptionList.setSelectedIndex(i);
-							break;
-						}
-					}
+			} else if (selectionTarget.isExceptionDay()) {
+				int exceptionIndex = findExceptionModelIndex(selectionTarget.getExceptionStart());
+				if (exceptionIndex != -1) {
+					exceptionList.setSelectedIndex(exceptionIndex);
 				}
 			}
 		} finally {
@@ -1278,6 +1507,34 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 		buttonPanel.add(getHelpButton());
 		return buttonPanel;
 	}
+
+	private void discardScratchChanges() {
+		dirtyWorkingHours = false;
+		unsaved = false;
+		resetInvalidCalendarMessage();
+		if (editedCalendar != null && originalCalendarSnapshot != null) {
+			CalendarService service = CalendarService.getInstance();
+			service.assignCalendar(editedCalendar, originalCalendarSnapshot);
+			form.setCalendar(service.makeScratchCopy(editedCalendar));
+		} else if (editedCalendar != null) {
+			form.setCalendar(CalendarService.getInstance().makeScratchCopy(editedCalendar));
+		}
+		setCurrentSelectionTarget(SelectionTarget.none());
+	}
+
+	protected void processWindowEvent(WindowEvent e) {
+		if (e != null && e.getID() == WindowEvent.WINDOW_CLOSING) {
+			onCancel();
+			return;
+		}
+		super.processWindowEvent(e);
+	}
+
+	protected void onCancel() {
+		discardScratchChanges();
+		super.onCancel();
+	}
+
 	public void onOk() {
 		if (!saveIfNeeded(true, false)) {
 			return;

@@ -15,6 +15,7 @@ public final class CalendarDialogAuditSuite extends TestCase
 		TestSuite suite = new TestSuite("CalendarDialogAuditSuite");
 		suite.addTestSuite(ChangeWorkingTimeDialogBoxTest.class);
 		suite.addTestSuite(ChangeWorkingTimeDialogDirtyStateTest.class);
+		suite.addTestSuite(ChangeWorkingTimeDialogSelectionModelTest.class);
 		suite.addTestSuite(ChangeWorkingTimeDialogLifecycleTest.class);
 		suite.addTestSuite(ChangeWorkingTimeDialogStressTest.class);
 		suite.addTestSuite(ChangeWorkingTimeDialogPerformanceTest.class);

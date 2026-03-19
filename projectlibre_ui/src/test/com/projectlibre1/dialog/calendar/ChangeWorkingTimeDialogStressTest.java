@@ -50,6 +50,7 @@ public class ChangeWorkingTimeDialogStressTest extends TestCase
 				CalendarDialogAuditSupport.editWorkingHoursAndTriggerSave(fixture, i % 7, (i + 1) % 7);
 			}
 
+			assertNull(CalendarDialogAuditSupport.getLastInvalidCalendarMessage(fixture));
 			assertTrue(CalendarDialogAuditSupport.isShowing(fixture));
 			CalendarDialogAuditSupport.closeViaCancel(fixture);
 			assertFalse(CalendarDialogAuditSupport.isShowing(fixture));

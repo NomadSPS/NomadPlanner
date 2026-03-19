@@ -12,7 +12,12 @@
   - close via `Cancel`
   - close via `OK`
   - close via window `X`
+  - invalid `OK` keeps the dialog open
+  - `Cancel` still closes cleanly after an invalid `OK`
   - reopen after close
+- `test.com.projectlibre1.dialog.calendar.ChangeWorkingTimeDialogSelectionModelTest`
+  - weekday selection replaces exception/date selection
+  - exception selection replaces weekday selection
 - `test.com.projectlibre1.dialog.calendar.ChangeWorkingTimeDialogDirtyStateTest`
   - weekday/exception selection churn does not mark the dialog dirty by itself
   - edited working hours are buffered into the scratch calendar on navigation instead of saving the real calendar immediately
@@ -68,41 +73,48 @@ Suggested datasets:
 - Fixed before this audit:
   - `GraphicManager.isEditingMasterProject()` could dereference a null `currentFrame` during calendar dialog initialization.
   - the details form row specification did not match the rendered controls, which could break dialog layout during open.
-- Current automated status on the dummy-project dataset:
+- Current automated status on the dummy-project dataset after the structural-hardening pass:
   - lifecycle smoke passes:
     - close via `Cancel`
     - close via `OK`
     - close via window `X`
+    - invalid `OK` leaves the dialog open
+    - `Cancel` still closes and restores the original calendar state after an invalid `OK`
     - reopen after close
+  - normalized selection-model regression passes:
+    - weekday selection becomes the only active target
+    - exception selection becomes the only active target
   - dirty-state regression passes:
     - plain weekday navigation no longer marks the dialog dirty
     - editing hours and navigating now leaves the dialog `unsaved` instead of persisting the calendar immediately
   - repeat open/close stress passes:
     - 25 cycles complete with no displayable `ChangeWorkingTimeDialogBox` instances retained
-  - rapid interaction stress passes, and the repeated invalid-calendar alert is now reduced to a single surfaced message for that dialog session during aggressive weekday/exception churn
+  - rapid interaction stress passes with no surfaced invalid-calendar message under aggressive weekday/exception churn
   - full audit suite currently passes:
-    - `OK (9 tests)`
-  - the save path no longer breaches the current dummy-project smoke budget after the selection-save hardening
-  - earlier isolated budget variance remains useful history, but is no longer reproduced by the current harness
+    - `OK (15 tests)`
+  - the dialog now keeps a normalized internal selection target and routes close/cancel through scratch-state discard instead of the commit path
+  - isolated test projects now use their own working-calendar copies, which removed same-JVM cross-test contamination from the audit harness
 
 ### EDT / Performance Risks
 - `ChangeWorkingTimeDialogBox.updateView()` recalculates flagged and non-working dates across the entire visible calendar range on every displayed-month change.
-- `ChangeWorkingTimeDialogBox.updateWorkingHours()` still commits buffered working-hour edits synchronously on the EDT when text fields are dirty, although it no longer persists the real calendar or rebuilds all selection lists on every navigation hop.
-- `calendarList`, `weekDayList`, and `exceptionList` selection changes all run save/update logic synchronously on the EDT.
-- Close responsiveness still depends on the same EDT path staying healthy because `onCancel()` and window close are lightweight wrappers around `setVisible(false)`.
+- `ChangeWorkingTimeDialogBox.updateWorkingHours()` still resolves day descriptors synchronously on the EDT, but navigation no longer persists the real calendar or rebuilds unrelated list state on every hop.
+- `calendarList`, `weekDayList`, and `exceptionList` selection changes now go through the normalized selection target and scratch-only buffering, but they still execute synchronously on the EDT.
+- `Cancel` and window close now discard scratch state directly and do not run validation/persist logic, which materially reduces close-path risk.
 
 Latest passing dummy-project timings from `ChangeWorkingTimeDialogPerformanceTest` as part of the full suite:
-- `open`: `84.13 ms`
-- `monthForward` p95/max: `13.15 / 15.07 ms`
-- `monthBackward` p95/max: `7.2 / 7.76 ms`
-- `calendarSwitch` p95/max: `12.47 / 12.47 ms`
-- `weekdaySelection` p95/max: `13.54 / 13.54 ms`
-- `exceptionSelection` p95/max: `0.17 / 0.17 ms`
-- `save` p95/max: `109.2 / 109.2 ms`
-- `close`: `37.46 ms`
+- `open`: `94.71 ms`
+- `monthForward` p95/max: `12.22 / 16.17 ms`
+- `monthBackward` p95/max: `6.63 / 8.1 ms`
+- `calendarSwitch` p95/max: `9.66 / 9.66 ms`
+- `weekdaySelection` p95/max: `51.9 / 51.9 ms`
+- `exceptionSelection` p95/max: `0.1 / 0.1 ms`
+- `save` p95/max: `97.29 / 97.29 ms`
+- `close`: `21.63 ms`
 
 Latest standalone performance smoke also passes:
-- `open`: not re-run independently after the final invalid-calendar alert suppression
+- `open`: `94.71 ms`
+- `save`: `97.29 ms`
+- `close`: `21.63 ms`
 - current full-suite profile remains the primary reference
 
 ### Memory / Listener Risks
@@ -110,11 +122,11 @@ Latest standalone performance smoke also passes:
 - `AbstractDialog.pack()` rebuilds content every time it is called without first clearing components. Normal modal use calls it once, but repeated `pack()` on the same instance remains a latent duplication risk.
 
 ### Usability Risks
-- Editing working-hour fields followed by a selection change triggers an immediate save path. If validation fails, the user is interrupted in the middle of navigation.
-- The month view, work-week list, and exception list all update each other eagerly, so larger calendar datasets still need live JFR validation on real imported projects.
-- The validation message `The calendar must have at least one default working day.` can be emitted several times during fast interaction sequences, which is noisy and suggests the editor can enter transient invalid states during navigation.
+- Editing working-hour fields followed by selection changes now stays scratch-local, but larger real-world calendars still need live JFR validation because the month view, work-week list, and exception list update each other eagerly on the EDT.
+- Invalid hour ranges still surface a warning when the user confirms with `OK`, which is expected, but the dialog now remains open and `Cancel` exits cleanly afterward.
+- Real project datasets may still reveal heavier `updateView()` cost than the dummy-project harness, especially with more calendars and more exceptions.
 
 ## Prioritized Follow-Up
-1. Debounce or batch cross-component selection updates (`calendarList`, `weekDayList`, `exceptionList`) so navigation does not repeatedly trigger validation and save work on the EDT.
-2. Root-cause the remaining invalid interaction path behind `The calendar must have at least one default working day.` so the dialog no longer attempts the invalid operation during aggressive churn, even though duplicate surfacing is now suppressed.
-3. Run the JFR/thread-dump workflow against a medium `MPP` and a real Primavera import with multiple calendars to confirm whether the same save-path and month-refresh costs scale up materially.
+1. Run the JFR/thread-dump workflow against a medium `MPP` and a real Primavera import with multiple calendars to confirm whether `updateView()` and selection churn stay within acceptable EDT budgets on real data.
+2. Consider batching or debouncing month-view and list synchronization if real-project JFR traces show meaningful EDT paint/layout spikes.
+3. If user feedback still reports sluggishness, profile `refreshSelectionLists()` and flagged-date recomputation for caching opportunities before attempting broader asynchronous changes.

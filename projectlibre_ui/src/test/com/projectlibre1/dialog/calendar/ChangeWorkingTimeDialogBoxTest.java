@@ -29,8 +29,6 @@ import com.projectlibre1.dialog.calendar.ChangeWorkingTimeDialogBox;
 import com.projectlibre1.pm.calendar.WorkingCalendar;
 import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.pm.task.Project;
-import com.projectlibre1.undo.DataFactoryUndoController;
-
 import junit.framework.TestCase;
 
 public class ChangeWorkingTimeDialogBoxTest extends TestCase
@@ -55,9 +53,9 @@ public class ChangeWorkingTimeDialogBoxTest extends TestCase
 				{
 					frame = new JFrame();
 					new GraphicManager(frame);
-					Project project = Project.getDummy();
+					Project project = CalendarDialogAuditSupport.createFreshProject();
 					WorkingCalendar calendar = (WorkingCalendar) project.getWorkCalendar();
-					dialog = ChangeWorkingTimeDialogBox.getInstance(frame, project, calendar, null, false, new DataFactoryUndoController());
+					dialog = ChangeWorkingTimeDialogBox.getInstance(frame, project, calendar, null, false, project.getUndoController());
 					content[0] = dialog.createContentPanel();
 				}
 				catch (Throwable t)

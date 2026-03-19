@@ -55,8 +55,11 @@
  *******************************************************************************/
 package com.projectlibre1.dialog.calendar;
 
+import java.util.Iterator;
+
 import com.projectlibre1.contrib.calendar.ContribIntervals;
 import com.projectlibre1.contrib.calendar.JXXMonthView;
+import com.projectlibre1.pm.time.HasStartAndEnd;
 import org.jdesktop.swing.calendar.DateSpan;
 
 
@@ -93,6 +96,21 @@ public class CalendarView extends JXXMonthView {
 	public void selectSingleWeekDay(int calendarDayNum) {
 		clearSelection();
 		selectWeekDay(calendarDayNum - 1);
+	}
+
+	public void selectIntervals(Intervals intervals) {
+		clearSelection();
+		if (intervals == null) {
+			return;
+		}
+		for (Iterator i = intervals.iterator(); i.hasNext();) {
+			HasStartAndEnd interval = (HasStartAndEnd) i.next();
+			select(new DateSpan(interval.getStart(), interval.getEnd()));
+		}
+	}
+
+	public void clearAllSelection() {
+		clearSelection();
 	}
 
 

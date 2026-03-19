@@ -8,6 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,10 +24,14 @@ import javax.swing.SwingUtilities;
 
 import com.projectlibre1.dialog.calendar.CalendarView;
 import com.projectlibre1.dialog.calendar.ChangeWorkingTimeDialogBox;
+import com.projectlibre1.pm.calendar.CalendarService;
+import com.projectlibre1.pm.calendar.DayDescriptor;
+import com.projectlibre1.pm.calendar.WorkingHours;
 import com.projectlibre1.pm.calendar.WorkingCalendar;
 import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.pm.task.Project;
 import com.projectlibre1.undo.DataFactoryUndoController;
+import com.projectlibre1.util.Environment;
 
 final class CalendarDialogAuditSupport
 {
@@ -270,6 +275,26 @@ final class CalendarDialogAuditSupport
 		});
 	}
 
+	static void closeViaOkSuppressingAlerts(final DialogFixture fixture) throws Exception
+	{
+		onEdt(new ThrowingRunnable()
+		{
+			public void run()
+			{
+				boolean originalBatchMode = Environment.isBatchMode();
+				Environment.setBatchMode(true);
+				try
+				{
+					fixture.getDialog().onOk();
+				}
+				finally
+				{
+					Environment.setBatchMode(originalBatchMode);
+				}
+			}
+		});
+	}
+
 	static void closeViaWindow(final DialogFixture fixture) throws Exception
 	{
 		onEdt(new ThrowingRunnable()
@@ -387,10 +412,10 @@ final class CalendarDialogAuditSupport
 
 				JTextField[] timeStart = fixture.getTimeStartFields();
 				JTextField[] timeEnd = fixture.getTimeEndFields();
-				timeStart[0].setText("8:00");
-				timeEnd[0].setText("12:00");
-				timeStart[1].setText("13:00");
-				timeEnd[1].setText("17:00");
+				timeStart[0].setText("7:00");
+				timeEnd[0].setText("11:00");
+				timeStart[1].setText("12:00");
+				timeEnd[1].setText("15:00");
 				for (int i = 2; i < timeStart.length; i++)
 				{
 					timeStart[i].setText("");
@@ -398,6 +423,53 @@ final class CalendarDialogAuditSupport
 				}
 
 				fixture.getWeekDayList().setSelectedIndex(targetWeekdayIndex);
+			}
+		});
+	}
+
+	static void editWorkingHoursWithoutSaving(final DialogFixture fixture, final int sourceWeekdayIndex) throws Exception
+	{
+		onEdt(new ThrowingRunnable()
+		{
+			public void run() throws Exception
+			{
+				fixture.getWeekDayList().setSelectedIndex(sourceWeekdayIndex);
+				fixture.getWorkingButton().doClick();
+
+				JTextField[] timeStart = fixture.getTimeStartFields();
+				JTextField[] timeEnd = fixture.getTimeEndFields();
+				timeStart[0].setText("7:00");
+				timeEnd[0].setText("11:00");
+				timeStart[1].setText("12:00");
+				timeEnd[1].setText("15:00");
+				for (int i = 2; i < timeStart.length; i++)
+				{
+					timeStart[i].setText("");
+					timeEnd[i].setText("");
+				}
+			}
+		});
+	}
+
+	static void editInvalidWorkingHoursWithoutSaving(final DialogFixture fixture, final int sourceWeekdayIndex) throws Exception
+	{
+		onEdt(new ThrowingRunnable()
+		{
+			public void run() throws Exception
+			{
+				fixture.getWeekDayList().setSelectedIndex(sourceWeekdayIndex);
+				fixture.getWorkingButton().doClick();
+
+				JTextField[] timeStart = fixture.getTimeStartFields();
+				JTextField[] timeEnd = fixture.getTimeEndFields();
+				timeStart[0].setText("11:00");
+				timeEnd[0].setText("7:00");
+				for (int i = 1; i < timeStart.length; i++)
+				{
+					timeStart[i].setText("");
+					timeEnd[i].setText("");
+				}
+				setField(fixture.getDialog(), "dirtyWorkingHours", Boolean.TRUE);
 			}
 		});
 	}
@@ -422,6 +494,112 @@ final class CalendarDialogAuditSupport
 				return (Boolean) getField(fixture.getDialog(), "unsaved");
 			}
 		})).booleanValue();
+	}
+
+	static String getSelectionKind(final DialogFixture fixture) throws Exception
+	{
+		return (String) onEdt(new Callable<String>()
+		{
+			public String call() throws Exception
+			{
+				Object selectionTarget = getField(fixture.getDialog(), "currentSelectionTarget");
+				Object kind = getField(selectionTarget, "kind");
+				return kind == null ? null : kind.toString();
+			}
+		});
+	}
+
+	static String getLastInvalidCalendarMessage(final DialogFixture fixture) throws Exception
+	{
+		return (String) onEdt(new Callable<String>()
+		{
+			public String call() throws Exception
+			{
+				return (String) getField(fixture.getDialog(), "lastInvalidCalendarMessage");
+			}
+		});
+	}
+
+	static String getEditedCalendarWeekDaySignature(final DialogFixture fixture, final int weekDayIndex) throws Exception
+	{
+		return getWeekDaySignature(fixture, "editedCalendar", weekDayIndex);
+	}
+
+	static String getScratchCalendarWeekDaySignature(final DialogFixture fixture, final int weekDayIndex) throws Exception
+	{
+		return (String) onEdt(new Callable<String>()
+		{
+			public String call() throws Exception
+			{
+				Object form = getField(fixture.getDialog(), "form");
+				WorkingCalendar calendar = (WorkingCalendar) getField(form, "calendar");
+				return describeWeekDay(calendar, weekDayIndex);
+			}
+		});
+	}
+
+	private static String getWeekDaySignature(final DialogFixture fixture, final String fieldName, final int weekDayIndex) throws Exception
+	{
+		return (String) onEdt(new Callable<String>()
+		{
+			public String call() throws Exception
+			{
+				WorkingCalendar calendar = (WorkingCalendar) getField(fixture.getDialog(), fieldName);
+				return describeWeekDay(calendar, weekDayIndex);
+			}
+		});
+	}
+
+	private static String describeWeekDay(final WorkingCalendar calendar, final int weekDayIndex)
+	{
+		int calendarDayNum = toCalendarDayNum(weekDayIndex);
+		DayDescriptor day = CalendarService.getInstance().getWeekDay(calendar, calendarDayNum);
+		return day.isModified() + "|" + day.isWorking() + "|" + describeWorkingHours(day.getWorkingHours());
+	}
+
+	private static String describeWorkingHours(final WorkingHours hours)
+	{
+		if (hours == null || !hours.hasHours())
+		{
+			return "none";
+		}
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 0; i < hours.getIntervals().size(); i++)
+		{
+			if (hours.getInterval(i) == null)
+			{
+				continue;
+			}
+			if (buffer.length() > 0)
+			{
+				buffer.append(',');
+			}
+			buffer.append(hours.getInterval(i).getStart());
+			buffer.append('-');
+			buffer.append(hours.getInterval(i).getEnd());
+		}
+		return buffer.toString();
+	}
+
+	private static int toCalendarDayNum(final int weekDayIndex)
+	{
+		switch (weekDayIndex)
+		{
+		case 0:
+			return Calendar.MONDAY;
+		case 1:
+			return Calendar.TUESDAY;
+		case 2:
+			return Calendar.WEDNESDAY;
+		case 3:
+			return Calendar.THURSDAY;
+		case 4:
+			return Calendar.FRIDAY;
+		case 5:
+			return Calendar.SATURDAY;
+		default:
+			return Calendar.SUNDAY;
+		}
 	}
 
 	static int countDisplayableCalendarDialogs()
@@ -516,12 +694,19 @@ final class CalendarDialogAuditSupport
 		return Math.round(value * 100.0d) / 100.0d;
 	}
 
-	private static Project createFreshProject() throws Exception
+	static Project createFreshProject() throws Exception
 	{
 		Constructor<Project> constructor = Project.class.getDeclaredConstructor(new Class[] { boolean.class });
 		constructor.setAccessible(true);
 		Project project = constructor.newInstance(new Object[] { Boolean.TRUE });
-		project.setUndoController(new DataFactoryUndoController(project));
+		DataFactoryUndoController undoController = new DataFactoryUndoController(project);
+		project.setUndoController(undoController);
+		project.initializeProject();
+		project.setUndoController(undoController);
+		CalendarService service = CalendarService.getInstance();
+		WorkingCalendar isolatedCalendar = service.makeScratchCopy((WorkingCalendar) project.getWorkCalendar());
+		isolatedCalendar.setName(project.getName() + " Calendar");
+		project.setWorkCalendar(isolatedCalendar);
 		return project;
 	}
 
