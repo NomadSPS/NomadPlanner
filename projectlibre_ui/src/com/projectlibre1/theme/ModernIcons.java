@@ -72,6 +72,7 @@ public class ModernIcons {
         PAINTERS.put("view.RBS", ModernIcons::paintViewWbs);
         PAINTERS.put("view.histogram", ModernIcons::paintViewHistogram);
         PAINTERS.put("view.charts", ModernIcons::paintViewCharts);
+        PAINTERS.put("view.taskDetails", ModernIcons::paintViewTaskDetails);
         PAINTERS.put("view.taskUsage", ModernIcons::paintViewTaskUsage);
         PAINTERS.put("view.resourceUsage", ModernIcons::paintViewResourceUsage);
         PAINTERS.put("view.report", ModernIcons::paintViewReport);
@@ -120,6 +121,7 @@ public class ModernIcons {
         PAINTERS.put("menu24.refresh", ModernIcons::paintRefresh);
         PAINTERS.put("menu24.calendarManager", ModernIcons::paintCalendar);
         PAINTERS.put("menu24.workingTime", ModernIcons::paintWorkingTime);
+        PAINTERS.put("menu24.taskDetails", ModernIcons::paintViewTaskDetails);
         PAINTERS.put("menu24.wbsSummaryColors", ModernIcons::paintWbsSummaryColors);
         PAINTERS.put("menu24.drivingPathBackward", ModernIcons::paintDrivingPathBackward);
         PAINTERS.put("menu24.drivingPathForward", ModernIcons::paintDrivingPathForward);
@@ -924,6 +926,32 @@ public class ModernIcons {
             float by = m + (i + 0.35f) * (h - 2 * m) * 0.25f;
             float bw = (w - m - divX - w * 0.05f) * barWidths[i];
             g.fill(new RoundRectangle2D.Float(divX + w * 0.03f, by, bw, barH, 2, 2));
+        }
+    }
+
+    private static void paintViewTaskDetails(Graphics2D g, int w, int h) {
+        setup(g, w);
+        float m = w * 0.12f;
+        float tabH = h * 0.2f;
+        float bodyY = m + tabH * 0.65f;
+
+        g.setColor(fg());
+        g.draw(new RoundRectangle2D.Float(m, bodyY, w - 2 * m, h - bodyY - m, 4, 4));
+
+        float tabGap = w * 0.03f;
+        float tabW = (w - 2 * m - 2 * tabGap) / 3f;
+        for (int i = 0; i < 3; i++) {
+            float x = m + i * (tabW + tabGap);
+            g.setColor(i == 0 ? accent() : secondary());
+            g.draw(new RoundRectangle2D.Float(x, m, tabW, tabH, 3, 3));
+        }
+
+        g.setColor(secondary());
+        float lineLeft = m + w * 0.08f;
+        float lineRight = w - lineLeft;
+        for (int i = 0; i < 3; i++) {
+            float y = bodyY + h * 0.13f + i * h * 0.14f;
+            g.draw(new Line2D.Float(lineLeft, y, lineRight, y));
         }
     }
 

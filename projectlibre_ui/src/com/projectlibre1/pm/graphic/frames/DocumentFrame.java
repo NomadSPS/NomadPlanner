@@ -104,6 +104,7 @@ import com.projectlibre1.pm.graphic.views.PertView;
 import com.projectlibre1.pm.graphic.views.ProjectView;
 import com.projectlibre1.pm.graphic.views.ResourceView;
 import com.projectlibre1.pm.graphic.views.Searchable;
+import com.projectlibre1.pm.graphic.views.TaskDetailsView;
 import com.projectlibre1.pm.graphic.views.TreeView;
 import com.projectlibre1.pm.graphic.views.UsageDetailView;
 import com.projectlibre1.toolbar.FilterToolBarManager;
@@ -179,6 +180,7 @@ public class DocumentFrame extends NamedFrame implements
 	protected ChartView histogramView;
 	protected ResourceView resourceView;
 	protected ProjectView projectView;
+	protected TaskDetailsView taskDetailsView;
 	protected UsageDetailView taskUsageView;
 	protected UsageDetailView resourceUsageView;
 	protected BaseView reportView;
@@ -678,6 +680,14 @@ public class DocumentFrame extends NamedFrame implements
 		return taskUsageView;
 	}
 
+	public TaskDetailsView getTaskDetailsView() {
+		if (taskDetailsView == null) {
+			taskDetailsView = new TaskDetailsView(this);
+			restoreWorkspaceFor(taskDetailsView);
+		}
+		return taskDetailsView;
+	}
+
 	public UsageDetailView getResourceUsageView() {
 		if (resourceUsageView == null) {
 			resourceUsageView = new UsageDetailView(this, graphicManager
@@ -730,6 +740,12 @@ public class DocumentFrame extends NamedFrame implements
 		}
 		else if (viewName.equals(ACTION_CHARTS))
 			bottomView = getChartView();
+		else if (viewName.equals(ACTION_TASK_DETAILS)) {
+			if (activeTopView == null || !activeTopView.showsTasks()) {
+				return false;
+			}
+			bottomView = getTaskDetailsView();
+		}
 		else if (viewName.equals(ACTION_TASK_USAGE))
 			bottomView = getTaskUsageView();
 		else if (viewName.equals(ACTION_RESOURCE_USAGE))
@@ -775,6 +791,8 @@ public class DocumentFrame extends NamedFrame implements
 		if (isDrivingPathModeActive() && !view.showsTasks())
 			clearDrivingPathMode();
 		getGraphicManager().setTaskInformation(view.showsTasks(),view.showsResources());
+		if (ACTION_TASK_DETAILS.equals(lastBottomButton) && !view.showsTasks())
+			deactivateBottomView();
 		refreshUndoButtons();
 		getGraphicManager().setEnabledDocumentMenuActions(true);
 		showWaitCursor(false);
@@ -827,11 +845,15 @@ public class DocumentFrame extends NamedFrame implements
 		boolean same = viewName.equals(lastBottomButton);
 		if (same)
 			return;
-		if (viewName == ACTION_NO_SUB_WINDOW)
+		if (ACTION_NO_SUB_WINDOW.equals(viewName))
 			deactivateBottomView();
-		else {
+		else if (activeBottomView != null) {
+			if (lastBottomButton != null)
+				menuManager.setActionSelected(lastBottomButton,false);
+			activeBottomView.onActivate(false);
 			mainView.removeBottom();
 		}
+		menuManager.setActionSelected(ACTION_NO_SUB_WINDOW,false);
 		activeBottomView = view;
 		view.onActivate(true);
 		lastBottomButton = viewName;
@@ -851,7 +873,7 @@ public class DocumentFrame extends NamedFrame implements
 		menuManager.setActionSelected(ACTION_NO_SUB_WINDOW,true);
 		if (lastBottomButton != null)
 			menuManager.setActionSelected(lastBottomButton,false);
-		activeTopView.onActivate(false);
+		activeBottomView.onActivate(false);
 		lastBottomButton = ACTION_NO_SUB_WINDOW;
 		mainView.removeBottom();
 		activeBottomView = null;
@@ -1357,6 +1379,7 @@ public class DocumentFrame extends NamedFrame implements
 		histogramView = null;
 		resourceView = null;
 		projectView = null;
+		taskDetailsView = null;
 		taskUsageView = null;
 		resourceUsageView = null;
 		reportView = null;
@@ -1375,6 +1398,7 @@ public class DocumentFrame extends NamedFrame implements
 			histogramView,
 			resourceView,
 			projectView,
+			taskDetailsView,
 			taskUsageView,
 			resourceUsageView,
 			reportView
@@ -1454,6 +1478,7 @@ public class DocumentFrame extends NamedFrame implements
 		ws.saveViewWorkspace(ACTION_HISTOGRAM,histogramView);
 		ws.saveViewWorkspace(ACTION_RESOURCES,resourceView);
 		ws.saveViewWorkspace(ACTION_PROJECTS,projectView);
+		ws.saveViewWorkspace(ACTION_TASK_DETAILS,taskDetailsView);
 		ws.saveViewWorkspace(ACTION_TASK_USAGE,taskUsageView);
 		ws.saveViewWorkspace(ACTION_RESOURCE_USAGE,resourceUsageView);
 		ws.saveViewWorkspace(ACTION_REPORT,reportView);

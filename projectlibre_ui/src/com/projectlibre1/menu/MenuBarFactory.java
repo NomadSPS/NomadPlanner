@@ -157,6 +157,7 @@ public class MenuBarFactory implements MenuActionConstants {
         menu.addSeparator();
         addItem(menu, ACTION_HISTOGRAM, "Histogram", 0, 0);
         addItem(menu, ACTION_CHARTS, "Charts", 0, 0);
+        addItem(menu, ACTION_TASK_DETAILS, "Task Details", 0, 0);
         addItem(menu, ACTION_NO_SUB_WINDOW, "No Sub Window", 0, 0);
         menu.addSeparator();
         addItem(menu, ACTION_ZOOM_IN, "Zoom In", KeyEvent.VK_EQUALS, InputEvent.CTRL_DOWN_MASK);

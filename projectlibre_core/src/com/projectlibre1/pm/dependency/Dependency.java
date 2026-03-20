@@ -325,6 +325,10 @@ public class Dependency implements Association, BelongsToDocument, DataObject {
 		return currentSchedule.getBegin() == successorDependencyDate;
 	}
 
+	public String getJumpToTaskLabel() {
+		return Messages.getString("Field.jumpToTask"); //$NON-NLS-1$
+	}
+
 	//DataObject
     public String getName() {
         // TODO Auto-generated method stub

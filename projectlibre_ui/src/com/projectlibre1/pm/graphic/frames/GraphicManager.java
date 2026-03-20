@@ -1064,6 +1064,7 @@ public class GraphicManager implements  FrameHolder, NamedFrameListener, WindowS
 		actionsMap.addHandler(ACTION_RESOURCES, resourceAction = new ViewAction(ACTION_RESOURCES));
 		actionsMap.addHandler(ACTION_HISTOGRAM, new ViewAction(ACTION_HISTOGRAM));
 		actionsMap.addHandler(ACTION_CHARTS, new ViewAction(ACTION_CHARTS));
+		actionsMap.addHandler(ACTION_TASK_DETAILS, new ViewAction(ACTION_TASK_DETAILS));
 		actionsMap.addHandler(ACTION_TASK_USAGE, new ViewAction(ACTION_TASK_USAGE));
 		actionsMap.addHandler(ACTION_RESOURCE_USAGE, new ViewAction(ACTION_RESOURCE_USAGE));
 		actionsMap.addHandler(ACTION_NO_SUB_WINDOW, new ViewAction(ACTION_NO_SUB_WINDOW));
@@ -2234,6 +2235,7 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
 	public void setTaskInformation(boolean taskType,boolean resourceType){
 		this.taskType=taskType;
 		this.resourceType=resourceType;
+		getMenuManager().setActionEnabled(ACTION_TASK_DETAILS,taskType);
 //		JButton button = null;
 //		String infoText = "Task Information";
 //		String notesText = "Task Notes";

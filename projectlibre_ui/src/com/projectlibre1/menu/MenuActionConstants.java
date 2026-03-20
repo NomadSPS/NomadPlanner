@@ -109,6 +109,7 @@ public interface MenuActionConstants {
 	public static final String ACTION_PROJECTS_DIALOG         = "ProjectsDialog";
 	public static final String ACTION_HISTOGRAM               = "Histogram";
 	public static final String ACTION_CHARTS                  = "Charts";
+	public static final String ACTION_TASK_DETAILS            = "TaskDetails";
 	public static final String ACTION_TASK_USAGE              = "TaskUsage";
 	public static final String ACTION_RESOURCE_USAGE          = "ResourceUsage";
 	public static final String ACTION_NO_SUB_WINDOW           = "NoSubWindow";

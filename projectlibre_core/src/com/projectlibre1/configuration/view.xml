@@ -868,6 +868,28 @@
 			<column>Field.lag</column>
 		</columns>
 	</spreadsheet>
+	<spreadsheet id="Spreadsheet.TaskDetails.predecessors" category="dependencySpreadsheet" actionListId="ActionList.dependency">
+		<columns>
+			<column>Field.id</column>
+			<column>Field.predecessorName</column>
+			<column>Field.predecessorId</column>
+			<column>Field.dependencyType</column>
+			<column>Field.lag</column>
+			<column>Field.driving</column>
+			<column>Field.jumpToTask</column>
+		</columns>
+	</spreadsheet>
+	<spreadsheet id="Spreadsheet.TaskDetails.successors" category="dependencySpreadsheet" actionListId="ActionList.dependency">
+		<columns>
+			<column>Field.id</column>
+			<column>Field.successorName</column>
+			<column>Field.successorId</column>
+			<column>Field.dependencyType</column>
+			<column>Field.lag</column>
+			<column>Field.driving</column>
+			<column>Field.jumpToTask</column>
+		</columns>
+	</spreadsheet>
 
 
 	<spreadsheet id="Spreadsheet.costRates" category="costRates"  actionListId="ActionList.costRates">

@@ -703,6 +703,8 @@
 			<field property="lag" id="Field.lag" duration="true" />
 			<field property="driving" id="Field.driving"
 				readOnly="true" />
+			<field property="jumpToTaskLabel" id="Field.jumpToTask"
+				readOnly="true" textWidth="44" columnWidth="44" />
 			<field property="dependencyType"
 				id="Field.dependencyType">
 				<select name="taskType">
