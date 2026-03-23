@@ -55,6 +55,7 @@
  *******************************************************************************/
 package com.projectlibre1.pm.graphic.gantt;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -62,11 +63,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -105,6 +108,7 @@ import com.projectlibre1.pm.dependency.Dependency;
 import com.projectlibre1.pm.dependency.DependencyType;
 import com.projectlibre1.pm.scheduling.ScheduleInterval;
 import com.projectlibre1.pm.task.Project;
+import com.projectlibre1.pm.task.Task;
 import com.projectlibre1.timescale.CalendarUtil;
 import com.projectlibre1.timescale.TimeInterval;
 import com.projectlibre1.timescale.TimeIterator;
@@ -227,9 +231,15 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 	    	y+=height/2;
 
 			double dw=height;
+			boolean modernMainBar = shouldPaintModernMainBar(format, node);
 
-			if (format.getMiddle()!=null){
-
+			if (modernMainBar){
+				if (g2 == null) {
+					updateModernMainBarMetrics(node, width, height);
+				} else {
+					paintModernMainBar(g2, node, x, y, width, height);
+				}
+			}else if (format.getMiddle()!=null){
 				if (g2==null&&format.isMain()){
 					Shape shape=format.getMiddle().toGeneralPath(
 							width,
@@ -253,13 +263,13 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 			}
 			if (g2==null) return;
 
-			if (format.getStart()!=null) format.getStart().draw(g2,
+			if (!modernMainBar && format.getStart()!=null) format.getStart().draw(g2,
 					dw,
 					height,
 					x ,
 					y,
 					useTextures());
-			if (format.getEnd()!=null) format.getEnd().draw(g2,
+			if (!modernMainBar && format.getEnd()!=null) format.getEnd().draw(g2,
 					dw,
 					height,
 					x+width,
@@ -267,7 +277,7 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 					useTextures()); //TODO case when no start symbol
 
 			//TODO style and format of completion should be treated with bar prefererences instead of a special case
-			if (format.isMain()&&!node.isSummary()&&node.isStarted()){
+			if (format.isMain()&&!node.isSummary()&&!isMilestoneNode(node)&&node.isStarted()){
 				long completedT=node.getCompleted();
 				if (completedT>=interval.getStart()){
 					double completedW=coord.toX(completedT)-x;
@@ -275,8 +285,17 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 						completedW=width;
 					completedW=CoordinatesConverter.adaptSmallBarEndX(x, x+completedW, node,config)-x;
 					double ph = config.getGanttProgressBarHeight();
-					java.awt.geom.RoundRectangle2D progressBar=new java.awt.geom.RoundRectangle2D.Double(x,y-ph/2,completedW,ph,Math.min(3.0,ph*0.25),Math.min(3.0,ph*0.25));
-					g2.setColor(com.projectlibre1.theme.NomadPlanColors.textPrimary());
+					double progressInset = modernMainBar ? 2.0 : 0.0;
+					double progressY = y - ph / 2;
+					double progressArc = Math.min(ph, Math.max(3.0, ph));
+					java.awt.geom.RoundRectangle2D progressBar=new java.awt.geom.RoundRectangle2D.Double(
+						x + progressInset,
+						progressY,
+						Math.max(0.0, completedW - progressInset),
+						ph,
+						progressArc,
+						progressArc);
+					g2.setColor(NomadPlanColors.ganttProgress());
 					g2.fill(progressBar);
 				}
 			}
@@ -284,6 +303,15 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 
 		}
 
+	}
+
+	private boolean isMilestoneNode(GraphicNode node) {
+		Task task = taskFor(node);
+		return (task != null) && task.isMilestone() && !node.isSummary();
+	}
+
+	private boolean shouldPaintModernMainBar(BarFormat format, GraphicNode node) {
+		return format.isMain() && node.isSchedule();
 	}
 
 	private class AnnotationRenderer implements Closure, Serializable {
@@ -439,8 +467,9 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 				Stroke oldStroke = g2.getStroke();
 				Dependency dep = dependency.getDependency();
 				if (dep.isDisabled()) g2.setStroke(DISABLED_LINK_STROKE);
-				if (dep.isCrossProject()) g2.setColor(/*dep.isDirty()?Color.ORANGE:*/EXTERNAL_LINK_COLOR);
-				else g2.setColor(/*dep.isDirty()?Color.RED:*/format.getMiddle().getColor());
+				if (dep.isCrossProject()) g2.setColor(EXTERNAL_LINK_COLOR);
+				else if (dep.isDisabled()) g2.setColor(NomadPlanColors.alpha(NomadPlanColors.ganttLink(), 144));
+				else g2.setColor(NomadPlanColors.ganttLink());
 				g2.draw(path);
 
 			//}
@@ -470,6 +499,127 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 			if (dep.isCrossProject())
 				shape.setPaint(oldEndColor);
 		}
+	}
+
+	private void updateModernMainBarMetrics(GraphicNode node, double width, double height) {
+		double paintedHeight = paintedBarHeight(node, height);
+		if (isMilestoneNode(node)) {
+			double diamondSize = Math.max(paintedHeight, 8.0);
+			node.setGanttShapeOffset((height - diamondSize) / 2.0);
+			node.setGanttShapeHeight(diamondSize);
+			return;
+		}
+		node.setGanttShapeOffset((height - paintedHeight) / 2.0);
+		node.setGanttShapeHeight(paintedHeight);
+	}
+
+	private void paintModernMainBar(Graphics2D g2, GraphicNode node, double x, double yCenter, double width, double height) {
+		if (isMilestoneNode(node)) {
+			paintMilestone(g2, node, x, yCenter, width, height);
+			return;
+		}
+
+		double paintedHeight = paintedBarHeight(node, height);
+		double paintedWidth = Math.max(width, Math.max(3.0, paintedHeight));
+		double y = yCenter - paintedHeight / 2.0;
+		double arc = Math.min(paintedHeight, paintedWidth);
+		Color fill = fillColor(node);
+		Color stroke = strokeColor(fill, node.isSummary());
+
+		Paint oldPaint = g2.getPaint();
+		Color oldColor = g2.getColor();
+		Stroke oldStroke = g2.getStroke();
+
+		RoundRectangle2D bar = new RoundRectangle2D.Double(x, y, paintedWidth, paintedHeight, arc, arc);
+		g2.setPaint(fill);
+		g2.fill(bar);
+
+		g2.setColor(stroke);
+		g2.setStroke(new BasicStroke(node.isSummary() ? 1.4f : 1.0f));
+		g2.draw(bar);
+
+		if (node.isSummary()) {
+			double accentHeight = Math.max(2.0, paintedHeight * 0.16);
+			RoundRectangle2D accent = new RoundRectangle2D.Double(
+				x,
+				y,
+				paintedWidth,
+				accentHeight,
+				arc,
+				arc);
+			g2.setColor(mix(fill, Color.BLACK, 0.16f));
+			g2.fill(accent);
+		}
+
+		g2.setPaint(oldPaint);
+		g2.setColor(oldColor);
+		g2.setStroke(oldStroke);
+	}
+
+	private void paintMilestone(Graphics2D g2, GraphicNode node, double x, double yCenter, double width, double height) {
+		double diamondSize = Math.max(paintedBarHeight(node, height), 8.0);
+		double centerX = x + Math.max(width, diamondSize) / 2.0;
+		double half = diamondSize / 2.0;
+
+		GeneralPath diamond = new GeneralPath();
+		diamond.moveTo(centerX, yCenter - half);
+		diamond.lineTo(centerX + half, yCenter);
+		diamond.lineTo(centerX, yCenter + half);
+		diamond.lineTo(centerX - half, yCenter);
+		diamond.closePath();
+
+		Color fill = NomadPlanColors.ganttMilestone();
+		Color stroke = strokeColor(fill, false);
+		Color oldColor = g2.getColor();
+		Stroke oldStroke = g2.getStroke();
+
+		g2.setPaint(fill);
+		g2.fill(diamond);
+		g2.setColor(isCritical(node) ? NomadPlanColors.ganttCritical() : stroke);
+		g2.setStroke(new BasicStroke(1.0f));
+		g2.draw(diamond);
+
+		g2.setColor(oldColor);
+		g2.setStroke(oldStroke);
+	}
+
+	private double paintedBarHeight(GraphicNode node, double baseHeight) {
+		double inset = node.isSummary() ? 1.0 : 2.0;
+		return Math.max(8.0, baseHeight - inset);
+	}
+
+	private Task taskFor(GraphicNode node) {
+		Object impl = (node == null) ? null : node.getNode().getImpl();
+		return (impl instanceof Task) ? (Task) impl : null;
+	}
+
+	private boolean isCritical(GraphicNode node) {
+		Task task = taskFor(node);
+		return (task != null) && task.isCritical() && !node.isSummary();
+	}
+
+	private Color fillColor(GraphicNode node) {
+		if (node.isSummary()) {
+			return NomadPlanColors.ganttSummary();
+		}
+		if (isCritical(node)) {
+			return NomadPlanColors.ganttCritical();
+		}
+		return NomadPlanColors.ganttTask();
+	}
+
+	private Color strokeColor(Color fill, boolean summary) {
+		return summary ? mix(fill, Color.BLACK, 0.30f) : mix(fill, Color.BLACK, 0.22f);
+	}
+
+	private Color mix(Color base, Color overlay, float ratio) {
+		float clamped = Math.max(0.0f, Math.min(1.0f, ratio));
+		float inverse = 1.0f - clamped;
+		int red = Math.round(base.getRed() * inverse + overlay.getRed() * clamped);
+		int green = Math.round(base.getGreen() * inverse + overlay.getGreen() * clamped);
+		int blue = Math.round(base.getBlue() * inverse + overlay.getBlue() * clamped);
+		int alpha = Math.round(base.getAlpha() * inverse + overlay.getAlpha() * clamped);
+		return new Color(red, green, blue, alpha);
 	}
 
 
@@ -600,7 +750,7 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 			//project start
 			int projectStartX=(int)Math.round(coord.toX(project.getStart()));
 			if (projectStartX>=bounds.getX()&&projectStartX<=bounds.getMaxX()){
-				g2.setPaint(new PredefinedPaint(PredefinedPaint.DASH_LINE,NomadPlanColors.textSecondary(),g2.getBackground()));
+				g2.setPaint(new PredefinedPaint(PredefinedPaint.DASH_LINE,NomadPlanColors.ganttProjectBoundary(),g2.getBackground()));
 				g2.drawLine(projectStartX,bounds.y,projectStartX,bounds.y+bounds.height);
 			}
 
@@ -609,7 +759,7 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 			if (statusDate != 0) {
 				int statusDateX=(int)Math.round(coord.toX(statusDate));
 				if (statusDateX>=bounds.getX()&&statusDateX<=bounds.getMaxX()){
-					g2.setPaint(new PredefinedPaint(PredefinedPaint.DOT_LINE2,NomadPlanColors.accent(),g2.getBackground()));
+					g2.setPaint(new PredefinedPaint(PredefinedPaint.DOT_LINE2,NomadPlanColors.ganttStatusLine(),g2.getBackground()));
 					g2.drawLine(statusDateX,bounds.y,statusDateX,bounds.y+bounds.height);
 				}
 			}
@@ -629,13 +779,34 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 		g2.fillRect((int)Math.round(coord.toX(startNonworking)), bounds.y, (int)Math.round(coord.toW(endNonWorking-startNonworking)), bounds.height);
 	}
 
+	private void paintRowStripes(Graphics2D g2, Rectangle bounds, double rowHeight) {
+		Color stripe = NomadPlanColors.ganttRowStripe();
+		if (stripe.equals(NomadPlanColors.ganttCanvas())) {
+			return;
+		}
+		int startRow = Math.max(0, (int) Math.floor(bounds.getY() / rowHeight));
+		int endRow = (int) Math.ceil(bounds.getMaxY() / rowHeight);
+		g2.setColor(stripe);
+		for (int row = startRow; row < endRow; row++) {
+			if ((row & 1) == 1) {
+				int y = (int) Math.floor(row * rowHeight);
+				int h = (int) Math.ceil(rowHeight);
+				g2.fillRect(bounds.x, y, bounds.width, h);
+			}
+		}
+	}
 
+	
 	ArrayList nodeList=new ArrayList();
     public void paint(Graphics g) {
     	paint(g,null);
     }
     public void paint(Graphics g,Rectangle visibleBounds) {
 		Graphics2D g2=(Graphics2D)g;
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+		g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
     	//CoordinatesConverter coord=((GanttParams)graphInfo).getCoord();
 
 		Rectangle clipBounds = g2.getClipBounds();
@@ -651,11 +822,11 @@ public class GanttRenderer extends GraphRenderer implements Serializable {
 			}
 		}
 
-		paintNonWorkingDays(g2,clipBounds);
-
-		//Modif for offline graphics
-
 		double rowHeight=((GanttParams)graphInfo).getRowHeight();
+		g2.setColor(NomadPlanColors.ganttCanvas());
+		g2.fillRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
+		paintRowStripes(g2, clipBounds, rowHeight);
+		paintNonWorkingDays(g2,clipBounds);
 
 		int i0=(int)Math.floor(clipBounds.getY()/rowHeight);
 		int i1;
