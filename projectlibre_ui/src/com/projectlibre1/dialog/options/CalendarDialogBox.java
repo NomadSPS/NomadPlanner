@@ -75,6 +75,7 @@ import com.projectlibre1.dialog.AbstractDialog;
 import com.projectlibre1.configuration.Settings;
 import com.projectlibre1.options.CalendarOption;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanUi;
 
 /**
  *
@@ -275,7 +276,7 @@ public class CalendarDialogBox extends AbstractDialog{
     	    		  "p,3dlu,p,3dlu,p,3dlu,p"); //$NON-NLS-1$
 
     		DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-    		builder.setDefaultDialogBorder();
+    		builder.setBorder(NomadPlanUi.createFlatDialogBodyBorder());
     		CellConstraints cc = new CellConstraints();
 			builder.add(new JLabel(Messages.getString("CalendarDialogBox.TheseSettingsOnlyApplyToDuration")),cc.xyw(builder.getColumn(), builder //$NON-NLS-1$
 					.getRow(), 4));
@@ -286,8 +287,9 @@ public class CalendarDialogBox extends AbstractDialog{
     		builder.nextLine(2);
     		builder.append(Messages.getString("CalendarDialogBox.DaysPerMonth"),daysPerMonth); //$NON-NLS-1$
   
-
-    		return builder.getPanel();
+    		JComponent panel = builder.getPanel();
+    		NomadPlanUi.applyFlatDialogBody(panel);
+    		return panel;
     	}
 //    	public JComponent createContentPanel() {
 //        	

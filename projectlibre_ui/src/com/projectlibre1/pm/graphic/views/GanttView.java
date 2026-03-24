@@ -98,6 +98,7 @@ import com.projectlibre1.pm.task.Task;
 import com.projectlibre1.pm.task.TaskSnapshot;
 import com.projectlibre1.pm.time.HasStartAndEnd;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.undo.UndoController;
 import com.projectlibre1.workspace.WorkspaceSetting;
 
@@ -245,6 +246,7 @@ public class GanttView extends SplittedView implements BaseView, ScheduleEventLi
 		gantt.setCache(cache);
 		gantt.setBarStyles((BarStyles) Dictionary.get(BarStyles.category,"standard"));
 		ganttScrollPane=new ScaledScrollPane(gantt,coord,documentFrame,spreadSheet.getRowHeight());
+		NomadPlanUi.prepareScrollPaneForCard(ganttScrollPane);
 		return ganttScrollPane;
     }
 

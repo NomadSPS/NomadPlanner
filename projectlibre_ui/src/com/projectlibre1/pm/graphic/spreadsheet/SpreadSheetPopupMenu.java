@@ -62,10 +62,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.BorderFactory;
 
 import com.projectlibre1.menu.MenuActionConstants;
 import com.projectlibre1.pm.graphic.IconManager;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.util.Environment;
 
 /**
@@ -83,7 +83,7 @@ public class SpreadSheetPopupMenu extends JPopupMenu {
 	        this.spreadSheet=spreadSheet;
 	        
 	        //setLabel("");
-	        setBorder(BorderFactory.createLineBorder(com.projectlibre1.theme.NomadPlanColors.border(), 1));
+	        NomadPlanUi.applyPopupSurface(this);
 	        
 	        final SpreadSheet sp=spreadSheet;
 			AbstractAction action;

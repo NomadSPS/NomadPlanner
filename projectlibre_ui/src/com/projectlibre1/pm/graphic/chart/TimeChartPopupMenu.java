@@ -61,9 +61,9 @@ import java.awt.event.ActionListener;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.BorderFactory;
 
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanUi;
 
 /**
  *
@@ -88,7 +88,7 @@ public class TimeChartPopupMenu extends JPopupMenu {
     
     public TimeChartPopupMenu(TimeChartPanel panel) { // this isn't used anymore - the JFreeChart popup has taken its place
         super();
-        setBorder(BorderFactory.createLineBorder(com.projectlibre1.theme.NomadPlanColors.border(), 1));
+        NomadPlanUi.applyPopupSurface(this);
         //add(buildVerticalScrollingItem(panel));
     }
     

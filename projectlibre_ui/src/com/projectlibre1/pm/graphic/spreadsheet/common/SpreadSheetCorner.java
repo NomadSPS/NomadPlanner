@@ -61,7 +61,6 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -72,6 +71,8 @@ import com.projectlibre1.pm.graphic.spreadsheet.selection.TimeSpreadSheetColumns
 import com.projectlibre1.pm.graphic.spreadsheet.time.TimeSpreadSheet;
 import com.projectlibre1.configuration.Dictionary;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanColors;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.util.Environment;
 
 /**
@@ -92,8 +93,8 @@ public class SpreadSheetCorner extends GradientCorner implements ListSelectionLi
 
 //
 //		setBackground(LafUtils.getUnselectedBackgroundColor());
-		if (!Environment.isNewLaf())
-			setBorder(new LineBorder(com.projectlibre1.theme.NomadPlanColors.border()));
+		setBackground(NomadPlanColors.background());
+		setBorder(NomadPlanUi.createHeaderCellBorder(false));
 		addMouseListener(new MouseAdapter(){
 			public void mousePressed(MouseEvent e){
 				CommonSpreadSheet spreadSheet=SpreadSheetCorner.this.spreadSheet;

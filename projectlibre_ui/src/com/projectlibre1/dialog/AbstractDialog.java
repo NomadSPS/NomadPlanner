@@ -67,6 +67,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.BoxLayout;
+import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -95,6 +96,9 @@ import com.projectlibre1.pm.graphic.model.cache.ReferenceNodeModelCache;
 import com.projectlibre1.configuration.FieldDictionary;
 import com.projectlibre1.configuration.Settings;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.CardSurfacePanel;
+import com.projectlibre1.theme.NomadPlanColors;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.util.BrowserControl;
 
 /**
@@ -111,6 +115,7 @@ public abstract class AbstractDialog extends JDialog {
 
     protected JComponent contentPanel = null;
     protected ButtonPanel buttonPanel = null;
+    protected CardSurfacePanel dialogSurface = null;
     private String helpAddress = null;
 
 	//protected MainFrame main;
@@ -222,17 +227,29 @@ public abstract class AbstractDialog extends JDialog {
 		contentPanel = createContentPanel();
 		buttonPanel = createButtonPanel();
         getContentPane().setLayout(new BorderLayout());
+        getContentPane().setBackground(NomadPlanColors.appBackground());
+        ((JComponent)getContentPane()).setBorder(NomadPlanUi.createDialogChromeBorder());
+
+        dialogSurface = NomadPlanUi.createCardPanel();
+        dialogSurface.setBorder(BorderFactory.createCompoundBorder(
+            dialogSurface.getBorder(),
+            NomadPlanUi.createDialogInnerBorder()));
 		if (contentPanel != null)
-			getContentPane().add(contentPanel, BorderLayout.CENTER);
+			dialogSurface.add(contentPanel, BorderLayout.CENTER);
 		if (buttonPanel != null)
-			getContentPane().add(buttonPanel, BorderLayout.AFTER_LAST_LINE);
+			dialogSurface.add(buttonPanel, BorderLayout.AFTER_LAST_LINE);
+        getContentPane().add(dialogSurface, BorderLayout.CENTER);
 
 	}
 	protected void clearComponents() {
-		if (contentPanel != null)
-			getContentPane().remove(contentPanel);
-		if (buttonPanel != null)
-			getContentPane().remove(buttonPanel);
+		if (dialogSurface != null) {
+			if (contentPanel != null)
+				dialogSurface.remove(contentPanel);
+			if (buttonPanel != null)
+				dialogSurface.remove(buttonPanel);
+			getContentPane().remove(dialogSurface);
+			dialogSurface = null;
+		}
 		
 	}
     public void pack() {
@@ -240,8 +257,9 @@ public abstract class AbstractDialog extends JDialog {
         super.pack();
     }
 
-    protected void createOkCancelButtons(String okText,String cancelText) {
+	protected void createOkCancelButtons(String okText,String cancelText) {
 		ok = new JButton(okText);
+		styleDialogButton(ok, true);
 		ok.setEnabled(initialOkEnabledState());
 		ok.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -249,6 +267,7 @@ public abstract class AbstractDialog extends JDialog {
 			}
 		});
 		cancel = new JButton(cancelText);
+		styleDialogButton(cancel, false);
 		cancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				AbstractDialog.this.onCancel();
@@ -275,6 +294,7 @@ public abstract class AbstractDialog extends JDialog {
 
 	protected void createCloseButton() {
 		ok = new JButton(Messages.getString("ButtonText.Close"));
+		styleDialogButton(ok, false);
 		ok.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				AbstractDialog.this.onOk();
@@ -418,6 +438,10 @@ public abstract class AbstractDialog extends JDialog {
 
 	public ButtonPanel getButtonPanel() {
 		return buttonPanel;
+	}
+
+	private void styleDialogButton(JButton button, boolean primary) {
+		NomadPlanUi.configureDialogButton(button, primary);
 	}
 
 	public void setButtonPanel(ButtonPanel buttonPanel) {

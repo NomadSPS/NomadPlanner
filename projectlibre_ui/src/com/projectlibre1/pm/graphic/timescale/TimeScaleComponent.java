@@ -72,6 +72,7 @@ import javax.swing.UIManager;
 import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.pm.graphic.gantt.GanttParams;
 import com.projectlibre1.graphic.configuration.GraphicConfiguration;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.timescale.TimeInterval;
 import com.projectlibre1.timescale.TimeIterator;
 import com.projectlibre1.util.Environment;
@@ -94,8 +95,8 @@ public class TimeScaleComponent extends JPanel {
 		int h=GraphicConfiguration.getInstance().getColumnHeaderHeight();
 
 
-		textColor=com.projectlibre1.theme.NomadPlanColors.textPrimary();
-		lineColor=com.projectlibre1.theme.NomadPlanColors.border();
+		textColor=NomadPlanColors.textPrimary();
+		lineColor=NomadPlanColors.alpha(NomadPlanColors.border(), 136);
 
 //		setBackground(UIManager.getColor("TableHeader.cellColor"));
 //		setBackground(UIManager.getColor("TableHeader.cellBackground"));
@@ -112,7 +113,10 @@ public class TimeScaleComponent extends JPanel {
 		if (Environment.isMac()){
 			setBackground(GraphicManager.getInstance().getLafManager().getUnselectedBackgroundColor()); //Using ColorUIResource directly doesn't work
 		}
-		else setBorder(UIManager.getBorder ("TableHeader.cellBorder"));
+		else {
+			setBackground(NomadPlanColors.surfaceMuted());
+			setBorder(UIManager.getBorder ("TableHeader.cellBorder"));
+		}
 	}
 
 

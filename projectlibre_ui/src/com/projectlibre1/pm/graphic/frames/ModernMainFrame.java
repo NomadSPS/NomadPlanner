@@ -64,6 +64,7 @@ import javax.swing.WindowConstants;
 import com.projectlibre1.pm.graphic.IconManager;
 import com.projectlibre1.pm.graphic.frames.workspace.FrameHolder;
 import com.projectlibre1.pm.graphic.frames.workspace.FrameManager;
+import com.projectlibre1.theme.NomadPlanColors;
 import com.projectlibre1.util.Environment;
 
 /**
@@ -109,6 +110,11 @@ public class ModernMainFrame extends JFrame implements FrameHolder {
                 graphicManager.closeApplication();
             }
         });
+        setBackground(NomadPlanColors.appBackground());
+        getContentPane().setBackground(NomadPlanColors.appBackground());
+        getRootPane().putClientProperty("JRootPane.titleBarBackground", NomadPlanColors.headerBackground());
+        getRootPane().putClientProperty("JRootPane.titleBarForeground", NomadPlanColors.textPrimary());
+        getRootPane().putClientProperty("JRootPane.menuBarEmbedded", Boolean.FALSE);
     }
 
     @Override

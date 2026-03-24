@@ -61,13 +61,12 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
-import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.pm.graphic.model.cache.GraphicNode;
 import com.projectlibre1.pm.graphic.spreadsheet.common.CommonSpreadSheetModel;
 import com.projectlibre1.graphic.configuration.CellFormat;
-import com.projectlibre1.graphic.configuration.shape.Colors;
+import com.projectlibre1.theme.NomadPlanColors;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.util.Environment;
 
 
@@ -80,30 +79,33 @@ public class CellUtility {
 		GraphicNode node = model.getNode(row);
 		CellFormat cellFormat=model.getCellProperties(node);
 		if (isSelected){
-			component.setForeground(table.getSelectionForeground());
-			component.setBackground(/*Color.BLACK*/GraphicManager.getInstance().getLafManager().getSelectedBackgroundColor());
+			component.setForeground(NomadPlanColors.selectionText());
+			component.setBackground(NomadPlanColors.selectionFill());
 		}else{
-
 			Color foreground=cellFormat.getForegroundObject();
 			component.setForeground((foreground==null)?table.getForeground():foreground);
 			Color background=cellFormat.getBackgroundObject();
-			component.setBackground((background==null)?table.getBackground():background);
+			component.setBackground(resolveBackground(table, model, node, background));
 		}
 		//component.setFont(table.getFont());
 		if (hasFocus){
-			component.setBorder( new LineBorder(com.projectlibre1.theme.NomadPlanColors.border()) );
+			component.setBorder(component instanceof NameCellComponent
+				? NomadPlanUi.createTreeCellFocusBorder()
+				: NomadPlanUi.createFocusBorder());
 			if (table.isCellEditable(row, column)) {
 				Color foreground=cellFormat.getForegroundObject();
 				component.setForeground((foreground==null)?UIManager.getColor("Table.focusCellForeground"):foreground );
 				Color background=cellFormat.getBackgroundObject();
-				component.setBackground((background==null)?(Environment.isMac()?Colors.NOT_TOO_DARK_GRAY:UIManager.getColor("Table.focusCellBackground")):background );
+				component.setBackground((background==null)?NomadPlanColors.selectionFill():background );
 			}
 		}else{
-			component.setBorder(new EmptyBorder(1, 1, 1, 1));
+			component.setBorder(component instanceof NameCellComponent
+				? NomadPlanUi.createTreeCellPaddingBorder()
+				: NomadPlanUi.createCellPaddingBorder());
 //			if (!model.isRowEditable(row))
 //				component.setForeground(Color.GRAY);
 			if (!model.isCellEditable(row,column+1)){
-				component.setForeground(com.projectlibre1.theme.NomadPlanColors.textSecondary());
+				component.setForeground(NomadPlanColors.textSecondary());
 			}
 		}
 	}
@@ -113,10 +115,21 @@ public class CellUtility {
 		component.setForeground(foreground);
 		Color background=format.getBackgroundObject();
 		component.setBackground(background);
-			component.setBorder(new EmptyBorder(1, 1, 1, 1));
+			component.setBorder(new EmptyBorder(0, 8, 0, 8));
 //			if (!model.isRowEditable(row))
 //				component.setForeground(Color.GRAY);
 
+	}
+
+	private static Color resolveBackground(JTable table, CommonSpreadSheetModel model, GraphicNode node, Color configuredBackground) {
+		if (configuredBackground != null) {
+			return configuredBackground;
+		}
+		if ((node != null) && (node.isSummary() || node.isGroup())) {
+			int level = model.getCache().getLevel(node);
+			return NomadPlanUi.groupedRowBackground(level);
+		}
+		return table.getBackground();
 	}
 
 

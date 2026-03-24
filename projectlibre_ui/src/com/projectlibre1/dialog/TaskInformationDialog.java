@@ -91,6 +91,7 @@ import com.projectlibre1.pm.key.HasId;
 import com.projectlibre1.pm.task.NormalTask;
 import com.projectlibre1.pm.task.Task;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanUi;
 /**
  *
  */
@@ -127,6 +128,7 @@ public class TaskInformationDialog extends InformationDialog {
 		CellConstraints cc = new CellConstraints();
 		
 		taskTabbedPane= new JTabbedPane();
+		NomadPlanUi.applyTabbedPaneStyle(taskTabbedPane);
 		taskTabbedPane.addTab(Messages.getString("TaskInformationDialog.General"),createGeneralPanel()); //$NON-NLS-1$
 		taskTabbedPane.addTab(Messages.getString("TaskInformationDialog.Predecessors"),createPredecessorsPanel()); //$NON-NLS-1$
 		taskTabbedPane.addTab(Messages.getString("TaskInformationDialog.Successors"),createSuccessorsPanel()); //$NON-NLS-1$
@@ -142,7 +144,7 @@ public class TaskInformationDialog extends InformationDialog {
 		builder.add(taskTabbedPane);
 		mainComponent = taskTabbedPane;
 
-		return builder.getPanel();
+		return finalizeDialogPanel(builder.getPanel());
 	}
 
 	public void showNotes() {
@@ -160,7 +162,7 @@ public class TaskInformationDialog extends InformationDialog {
 		DefaultFormBuilder builder = new DefaultFormBuilder(layout);
 		map.append(builder,"Field.name"); //$NON-NLS-1$
 		builder.nextLine(); // border at bottom
-		return builder.getPanel();
+		return finalizeDialogPanel(builder.getPanel());
 	}
 	
 
@@ -195,7 +197,7 @@ public class TaskInformationDialog extends InformationDialog {
 		builder.nextLine(2);
 		map.append(builder,"Field.baselineStart"); //$NON-NLS-1$
 		map.append(builder,"Field.baselineFinish"); //$NON-NLS-1$
-		return builder.getPanel();
+		return finalizeDialogPanel(builder.getPanel());
 	}
 	
 	private JComponent createAdvancedPanel(){
@@ -249,7 +251,7 @@ public class TaskInformationDialog extends InformationDialog {
 		builder.add(createPredecessorsSpreadsheet());
 		JComponent pred = builder.getPanel();
 		HelpUtil.addDocHelp(pred,"Linking");
-		return pred;	
+		return finalizeDialogPanel(pred);	
 	}
 	
 	private class DependencySpreadSheet extends SpreadSheet {
@@ -290,7 +292,7 @@ public class TaskInformationDialog extends InformationDialog {
 	
 	protected SpreadSheet predecessorsSpreadSheet;
  	public static final String DEPENDENCY_SPREADSHEET=SpreadSheetCategories.dependencySpreadsheetCategory;
-    protected JScrollPane createPredecessorsSpreadsheet() {
+	protected JScrollPane createPredecessorsSpreadsheet() {
     	final TaskInformationDialog self = this;
         predecessorsSpreadSheet = new DependencySpreadSheet(this,true);
 		predecessorsSpreadSheet.setSpreadSheetCategory(DEPENDENCY_SPREADSHEET);
@@ -309,7 +311,9 @@ public class TaskInformationDialog extends InformationDialog {
 //				,false
 //				,true
 				);
-	    return SpreadSheetUtils.makeSpreadsheetScrollPane(predecessorsSpreadSheet);
+	    JScrollPane scrollPane = SpreadSheetUtils.makeSpreadsheetScrollPane(predecessorsSpreadSheet);
+	    NomadPlanUi.prepareDialogScrollPane(scrollPane);
+	    return scrollPane;
 
     }
     //cache reconstructed because the main cache holding edges isn't ordered
@@ -336,7 +340,7 @@ public class TaskInformationDialog extends InformationDialog {
 		builder.add(createSuccessorsSpreadsheet());
 		JComponent succ = builder.getPanel();
 		HelpUtil.addDocHelp(succ,"Linking");
-		return succ;	
+		return finalizeDialogPanel(succ);	
 	}
 	
 	protected SpreadSheet successorsSpreadSheet;
@@ -360,7 +364,9 @@ public class TaskInformationDialog extends InformationDialog {
 //				,true
 				);
 
-	    return SpreadSheetUtils.makeSpreadsheetScrollPane(successorsSpreadSheet);
+	    JScrollPane scrollPane = SpreadSheetUtils.makeSpreadsheetScrollPane(successorsSpreadSheet);
+	    NomadPlanUi.prepareDialogScrollPane(scrollPane);
+	    return scrollPane;
 
     }
     //cache reconstructed because the main cache holding edges isn't ordered
@@ -388,7 +394,7 @@ public class TaskInformationDialog extends InformationDialog {
 				.getRow(), 3));
 		JComponent panel = builder.getPanel();
 		HelpUtil.addDocHelp(panel,"Assign_Resources");
-		return panel;	
+		return finalizeDialogPanel(panel);	
 	}
 
 	protected SpreadSheet assignmentSpreadSheet;
@@ -405,7 +411,9 @@ public class TaskInformationDialog extends InformationDialog {
         assignmentSpreadSheet.setActions(new String[]{MenuActionConstants.ACTION_DELETE});
 
 		updateAssignmentSpreadsheet();
-	    return SpreadSheetUtils.makeSpreadsheetScrollPane(assignmentSpreadSheet);
+	    JScrollPane scrollPane = SpreadSheetUtils.makeSpreadsheetScrollPane(assignmentSpreadSheet);
+	    NomadPlanUi.prepareDialogScrollPane(scrollPane);
+	    return scrollPane;
 
     }
     protected void updateAssignmentSpreadsheet() {
@@ -451,6 +459,11 @@ public class TaskInformationDialog extends InformationDialog {
 
 	protected boolean hasHelpButton() {
 		return true;
+	}
+
+	private JComponent finalizeDialogPanel(JComponent panel) {
+		NomadPlanUi.applyFlatDialogBody(panel);
+		return panel;
 	}
 
 	

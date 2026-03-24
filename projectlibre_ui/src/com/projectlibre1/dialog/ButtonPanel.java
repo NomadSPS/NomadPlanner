@@ -60,12 +60,15 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.plaf.basic.BasicOptionPaneUI;
 
+import com.projectlibre1.theme.NomadPlanColors;
 
 
 public class ButtonPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	public ButtonPanel() {
 	    super(new BasicOptionPaneUI.ButtonAreaLayout(true, 8));
+	    setOpaque(false);
+	    setBackground(NomadPlanColors.background());
 	    setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0));
 	}
 	public void addButton(JButton button) {

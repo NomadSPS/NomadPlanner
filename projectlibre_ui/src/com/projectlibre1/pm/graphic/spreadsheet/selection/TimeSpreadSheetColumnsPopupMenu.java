@@ -62,11 +62,11 @@ import java.util.Iterator;
 
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.BorderFactory;
 
 import com.projectlibre1.pm.graphic.spreadsheet.time.TimeSpreadSheet;
 import com.projectlibre1.configuration.Dictionary;
 import com.projectlibre1.field.Field;
+import com.projectlibre1.theme.NomadPlanUi;
 
 /**
  *
@@ -101,7 +101,7 @@ public class TimeSpreadSheetColumnsPopupMenu extends JPopupMenu {
         super();
         this.spreadSheet=spreadSheet;
         
-        setBorder(BorderFactory.createLineBorder(com.projectlibre1.theme.NomadPlanColors.border(), 1));
+        NomadPlanUi.applyPopupSurface(this);
 		
 		Object columnDefinitions[] = Dictionary.getAll(type);
 		//if (columnDefinitions==null||columnDefinitions.length==0) return;

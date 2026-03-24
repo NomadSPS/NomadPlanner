@@ -97,6 +97,9 @@ import com.projectlibre1.pm.graphic.spreadsheet.selection.event.SelectionNodeLis
 import com.projectlibre1.pm.graphic.timescale.ScaledScrollPane;
 import com.projectlibre1.pm.graphic.views.SearchContext;
 import com.projectlibre1.pm.graphic.views.Searchable;
+import com.projectlibre1.theme.NomadPlanColors;
+import com.projectlibre1.theme.NomadPlanThemeTokens;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.configuration.Dictionary;
 import com.projectlibre1.field.Field;
 import com.projectlibre1.field.FieldParseException;
@@ -132,8 +135,10 @@ public class CommonSpreadSheet extends CommonTable implements CacheListener, Sav
 
 	public CommonSpreadSheet() {
 		super();
-		setGridColor(com.projectlibre1.theme.NomadPlanColors.border());
+		NomadPlanUi.applyTableStyle(this);
+		setGridColor(NomadPlanColors.border());
 		putClientProperty("JTable.autoStartsEdit",Boolean.TRUE);
+		putClientProperty("JTable.showTrailingVerticalLine", Boolean.FALSE);
 		//setSurrendersFocusOnKeystroke(true); //has the side effect of selecting the first character of cell after ENTER keystroke
 		setAutoCreateColumnsFromModel(false);
 		rowHeader=new SpreadSheetRowHeader(this);
@@ -223,9 +228,14 @@ public class CommonSpreadSheet extends CommonTable implements CacheListener, Sav
 
 
 		GraphicConfiguration config=GraphicConfiguration.getInstance();
-		setRowHeight(config.getRowHeight());
+		setRowHeight(Math.max(config.getRowHeight(), NomadPlanThemeTokens.denseRowHeight()));
 		setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		setCellSelectionEnabled(true);
+		setSelectionBackground(NomadPlanColors.selectionFill());
+		setSelectionForeground(NomadPlanColors.selectionText());
+		if (getTableHeader() != null) {
+			getTableHeader().setReorderingAllowed(false);
+		}
 		//setRowSelectionAllowed(true);
 		//setColumnSelectionAllowed(true);
 	}

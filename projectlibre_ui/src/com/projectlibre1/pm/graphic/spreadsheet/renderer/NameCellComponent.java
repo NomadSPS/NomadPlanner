@@ -86,6 +86,8 @@ import com.projectlibre1.graphic.configuration.CellFormat;
  *
  */
 public class NameCellComponent extends JPanel {
+	private static final int TEXT_ICON_GAP = 2;
+	private static final int TREE_INDENT_WIDTH = 8;
 	protected JComponent textComponent = null;
 	protected JLabel iconLabel = null;
 	protected Box.Filler filler = null;
@@ -118,7 +120,9 @@ public class NameCellComponent extends JPanel {
 	public void init() {
 		setBackground(javax.swing.UIManager.getColor("Table.background") != null
 			? javax.swing.UIManager.getColor("Table.background") : Color.WHITE);
-		textComponent.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
+		setOpaque(true);
+		textComponent.setOpaque(false);
+		textComponent.setBorder(BorderFactory.createEmptyBorder(0, TEXT_ICON_GAP, 0, 0));
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		if (getComponentCount() != 0)
 			removeAll();
@@ -229,10 +233,7 @@ public class NameCellComponent extends JPanel {
 	public void setLevel(int level,boolean offline) {
 		if (this.level==level)return;
 		this.level=level;
-		if (level == 0)
-			return;
-		int width = (leafIcon == null) ? 0 : (level - 1)
-				* leafIcon.getIconWidth();
+		int width = Math.max(0, level - 1) * TREE_INDENT_WIDTH;
 		filler.changeShape(new Dimension(width, 0), new Dimension(width, 0),
 				new Dimension(width, Short.MAX_VALUE));
 		if (offline) invalidate(); //needed for offline, otherwise filler don't change

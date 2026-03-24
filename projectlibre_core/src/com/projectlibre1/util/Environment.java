@@ -59,6 +59,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+
 import com.projectlibre1.company.ApplicationUser;
 import com.projectlibre1.contrib.ClassLoaderUtils;
 import com.projectlibre1.session.SessionFactory;
@@ -156,8 +159,17 @@ public class Environment {
 //		&& !Environment.isChinese());
 	}
 	public static boolean isNewLaf() {
-	return false;
-	//	return newLaf;
+		if (newLaf) {
+			return true;
+		}
+		try {
+			LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
+			if (lookAndFeel != null && lookAndFeel.getClass().getName().contains("FlatLaf")) {
+				return true;
+			}
+		} catch (Throwable ignored) {
+		}
+		return newLook;
 	}
 	public static void setNewLaf(boolean newLaf) {
 		Environment.newLaf = newLaf;

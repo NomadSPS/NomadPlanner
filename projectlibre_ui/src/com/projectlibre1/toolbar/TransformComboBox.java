@@ -56,12 +56,15 @@
 package com.projectlibre1.toolbar;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JToolTip;
 import javax.swing.UIManager;
 
@@ -71,6 +74,8 @@ import com.projectlibre1.menu.HyperLinkToolTip;
 import com.projectlibre1.menu.MenuManager;
 import com.projectlibre1.grouping.core.transform.CommonTransformFactory;
 import com.projectlibre1.grouping.core.transform.ViewConfiguration;
+import com.projectlibre1.theme.NomadPlanColors;
+import com.projectlibre1.theme.NomadPlanUi;
 
 /**
  * 
@@ -93,6 +98,7 @@ public class TransformComboBox extends JComboBox {
 			tip =((TransformComboBoxModel)getModel()).getTipText();
 		}
 		setToolTipText(tip);
+		setRenderer(new TransformListCellRenderer());
 	}
 	public void setView(ViewConfiguration view){
 		((TransformComboBoxModel)getModel()).setView(view);
@@ -117,12 +123,31 @@ public class TransformComboBox extends JComboBox {
 	
 	public void paintComponent(Graphics graphics) {
 		boolean none =  (getSelectedIndex() <= 0);
-		setForeground(none ? UIManager.getColor("ComboBox.foreground") : Color.RED); //$NON-NLS-1$
+		setForeground(none ? UIManager.getColor("ComboBox.foreground") : NomadPlanColors.textPrimary()); //$NON-NLS-1$
 		super.paintComponent(graphics);
 	}
 	public void transformBasedOnValue() {
 		CommonTransformFactory factory = (CommonTransformFactory)getSelectedItem();
 		((TransformComboBoxModel)getModel()).changeTransform(factory);
+	}
+
+	private static final class TransformListCellRenderer extends DefaultListCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			NomadPlanUi.configurePopupList(list);
+			if (component instanceof javax.swing.JComponent) {
+				((javax.swing.JComponent) component).setBorder(NomadPlanUi.createCellPaddingBorder());
+			}
+			component.setForeground(isSelected ? NomadPlanColors.selectionText() : NomadPlanColors.textPrimary());
+			component.setBackground(isSelected ? NomadPlanColors.selectionFill() : NomadPlanColors.background());
+			if (!list.isEnabled()) {
+				component.setForeground(NomadPlanColors.disabledText());
+			}
+			return component;
+		}
 	}
 
 }

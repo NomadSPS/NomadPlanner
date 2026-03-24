@@ -55,19 +55,20 @@
  *******************************************************************************/
 package com.projectlibre1.pm.graphic.spreadsheet.selection;
 
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.BorderFactory;
 
 import com.projectlibre1.dialog.RenameDialog;
 import com.projectlibre1.pm.graphic.spreadsheet.common.CommonSpreadSheet;
 import com.projectlibre1.configuration.Dictionary;
 import com.projectlibre1.configuration.NamedItem;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanUi;
 
 /**
  *
@@ -85,8 +86,10 @@ public class SpreadSheetColumnsPopupMenu extends JPopupMenu {
     	private boolean current = false;
     	MenuAction(String text, CommonSpreadSheet spreadSheet, ArrayList fields, boolean selected) {
     		super(text);
-    		if (selected)
-    			setText("<html><span color=\"blue\"><u><b>" + text + " " + Messages.getString("Text.clickToRename") + "</b></u></span></html>");
+    		if (selected) {
+    			setText(text + " (" + Messages.getString("Text.clickToRename") + ")");
+    			setFont(getFont().deriveFont(Font.BOLD));
+    		}
     		this.fields = fields;
     		this.spreadSheet = spreadSheet;
     		current = selected;
@@ -118,7 +121,7 @@ public class SpreadSheetColumnsPopupMenu extends JPopupMenu {
         super();
         this.spreadSheet=spreadSheet;
         this.type = type;
-        setBorder(BorderFactory.createLineBorder(com.projectlibre1.theme.NomadPlanColors.border(), 1));
+        NomadPlanUi.applyPopupSurface(this);
 		setContents();
     }
 

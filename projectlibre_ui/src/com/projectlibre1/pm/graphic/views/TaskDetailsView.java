@@ -37,6 +37,9 @@ import com.projectlibre1.pm.task.NormalTask;
 import com.projectlibre1.pm.task.Project;
 import com.projectlibre1.pm.task.Task;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.CardSurfacePanel;
+import com.projectlibre1.theme.NomadPlanColors;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.undo.UndoController;
 import com.projectlibre1.workspace.WorkspaceSetting;
 
@@ -50,6 +53,7 @@ public class TaskDetailsView extends JPanel implements BaseView, SelectionNodeLi
 	private final Project project;
 	private final CardLayout cardLayout = new CardLayout();
 	private final JPanel contentPanel = new JPanel(cardLayout);
+	private final CardSurfacePanel cardPanel = NomadPlanUi.createCardPanel();
 	private final JLabel emptyLabel = new JLabel(Messages.getString("TaskDetailsView.EmptyState"), JLabel.CENTER); //$NON-NLS-1$
 	private final JTabbedPane tabbedPane = new JTabbedPane();
 	private final SpreadSheet resourcesSpreadSheet;
@@ -71,13 +75,24 @@ public class TaskDetailsView extends JPanel implements BaseView, SelectionNodeLi
 	}
 
 	private void initUi() {
+		NomadPlanUi.applyWorkspaceBackground(this);
+		setOpaque(false);
+		setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		contentPanel.setOpaque(false);
+		cardPanel.setBorder(BorderFactory.createCompoundBorder(
+			cardPanel.getBorder(),
+			BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+		emptyLabel.setForeground(NomadPlanColors.textSecondary());
 		emptyLabel.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+		emptyLabel.setHorizontalTextPosition(JLabel.CENTER);
 		contentPanel.add(emptyLabel, EMPTY_CARD);
 		tabbedPane.addTab(Messages.getString("TaskInformationDialog.Resources"), SpreadSheetUtils.makeSpreadsheetScrollPane(resourcesSpreadSheet)); //$NON-NLS-1$
 		tabbedPane.addTab(Messages.getString("TaskInformationDialog.Predecessors"), SpreadSheetUtils.makeSpreadsheetScrollPane(predecessorsSpreadSheet)); //$NON-NLS-1$
 		tabbedPane.addTab(Messages.getString("TaskInformationDialog.Successors"), SpreadSheetUtils.makeSpreadsheetScrollPane(successorsSpreadSheet)); //$NON-NLS-1$
+		NomadPlanUi.applyTabbedPaneStyle(tabbedPane);
 		contentPanel.add(tabbedPane, DETAILS_CARD);
-		add(contentPanel, BorderLayout.CENTER);
+		cardPanel.add(contentPanel, BorderLayout.CENTER);
+		add(cardPanel, BorderLayout.CENTER);
 	}
 
 	private SpreadSheet createResourcesSpreadsheet() {

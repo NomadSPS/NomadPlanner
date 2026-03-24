@@ -157,10 +157,6 @@ public class ModernIcons {
         PAINTERS.put("DrivingPathForward", ModernIcons::paintDrivingPathForward);
         PAINTERS.put("DrivingPathBoth", ModernIcons::paintDrivingPathBoth);
 
-        // Logo (application menu button)
-        PAINTERS.put("logo.NomadPlan", ModernIcons::paintLogo);
-        PAINTERS.put("logo.ProjectLibre", ModernIcons::paintLogo);
-
         // --- Stage 2: Task Indicators ---
         PAINTERS.put("indicator.completed", ModernIcons::paintIndicatorCompleted);
         PAINTERS.put("indicator.note", ModernIcons::paintIndicatorNote);
@@ -227,7 +223,7 @@ public class ModernIcons {
         PAINTERS.put("dialog.cancel", ModernIcons::paintDialogCancel);
 
         // --- Stage 2: System/Misc ---
-        PAINTERS.put("application.icon", ModernIcons::paintLogo);
+        PAINTERS.put("application.icon", ModernIcons::paintAppGlyph);
         PAINTERS.put("menu16.locale", ModernIcons::paintGlobe);
         PAINTERS.put("image.down", ModernIcons::paintArrowDown);
         PAINTERS.put("image.up", ModernIcons::paintArrowUp);
@@ -1226,6 +1222,35 @@ public class ModernIcons {
         int x = (w - textW) / 2;
         int y = (h - fm.getHeight()) / 2 + fm.getAscent();
         g.drawString(text, x, y);
+    }
+
+    private static void paintAppGlyph(Graphics2D g, int w, int h) {
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        float inset = Math.max(1.5f, w * 0.12f);
+        float size = Math.min(w, h) - (inset * 2);
+        RoundRectangle2D body = new RoundRectangle2D.Float(
+            (w - size) / 2f,
+            (h - size) / 2f,
+            size,
+            size,
+            size * 0.28f,
+            size * 0.28f);
+        g.setColor(NomadPlanColors.alpha(accent(), 56));
+        g.fill(body);
+        g.setColor(accent());
+        g.setStroke(new BasicStroke(Math.max(1.6f, w * 0.06f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.draw(body);
+
+        float left = w * 0.3f;
+        float center = w * 0.5f;
+        float right = w * 0.7f;
+        float top = h * 0.28f;
+        float bottom = h * 0.72f;
+        g.setColor(fg());
+        g.draw(new Line2D.Float(left, top, left, bottom));
+        g.draw(new Line2D.Float(left, top, center, bottom));
+        g.draw(new Line2D.Float(center, bottom, right, top));
+        g.draw(new Line2D.Float(right, top, right, bottom));
     }
 
     // =========== STAGE 2: TASK INDICATORS ===========

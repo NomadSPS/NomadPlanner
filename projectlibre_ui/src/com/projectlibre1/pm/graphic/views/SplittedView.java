@@ -61,6 +61,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.pm.graphic.views.synchro.ScrollPaneSynchronizer;
 import com.projectlibre1.pm.graphic.views.synchro.Synchronizer;
 
@@ -83,6 +84,8 @@ public abstract class SplittedView extends JSplitPane {
 		super(JSplitPane.HORIZONTAL_SPLIT);
 		this.synchronizer = synchronizer;
 		setOneTouchExpandable(true);
+		setOpaque(false);
+		NomadPlanUi.applySplitPaneStyle(this);
 	}
 	public void cleanUp() {
 		leftScrollPane = null;
@@ -93,6 +96,8 @@ public abstract class SplittedView extends JSplitPane {
 	public void init() {
 		leftScrollPane = createLeftScrollPane();
 		rightScrollPane = createRightScrollPane();
+		NomadPlanUi.prepareScrollPaneForCard(leftScrollPane);
+		NomadPlanUi.prepareScrollPaneForCard(rightScrollPane);
 		setLeftComponent(leftScrollPane);
 		setRightComponent(rightScrollPane);
 

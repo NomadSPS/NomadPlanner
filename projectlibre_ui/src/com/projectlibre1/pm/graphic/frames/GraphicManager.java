@@ -71,6 +71,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -130,6 +131,7 @@ import org.pushingpixels.flamingo.api.ribbon.RibbonTask;
 import com.projectlibre.ui.ribbon.CustomRibbonBandGenerator;
 import com.projectlibre.ui.ribbon.ProjectLibreRibbonUI;
 import com.projectlibre1.menu.MenuBarFactory;
+import com.projectlibre1.menu.ModernHeaderPanel;
 import com.projectlibre1.menu.ModernToolBar;
 import com.projectlibre1.configuration.Configuration;
 import com.projectlibre1.configuration.FieldDictionary;
@@ -500,14 +502,24 @@ public class GraphicManager implements  FrameHolder, NamedFrameListener, WindowS
 		DocumentFrame dframe = getCurrentFrame();
 		String title=Messages.getContextString("Text.ApplicationTitle"); //$NON-NLS-1$
 		if (dframe != null && dframe.getProject() != null) {
-			if (Environment.getStandAlone()) title=dframe.getProject().getTitle();
+			if (Environment.getStandAlone()) {
+				String fileName = dframe.getProject().getFileName();
+				title = displayFileLabel(fileName != null ? fileName : dframe.getProject().getName());
+			}
 			else title += " - " + dframe.getProject().getName(); //$NON-NLS-1$
 			if (!isSaving && dframe.getProject().needsSaving())
 				title += " *"; // modified; //$NON-NLS-1$
 		}
-		Frame f=getFrame();
 		if (frame!=null) frame.setTitle(title);
 
+	}
+
+	private String displayFileLabel(String pathOrName) {
+		if (pathOrName == null || pathOrName.length() == 0) {
+			return Messages.getContextString("Text.ApplicationTitle"); //$NON-NLS-1$
+		}
+		String fileName = new File(pathOrName).getName();
+		return (fileName == null || fileName.length() == 0) ? pathOrName : fileName;
 	}
     /**
 	 * Adds a new document frame and shows it
@@ -2593,7 +2605,8 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
         filterToolBarManager = FilterToolBarManager.create(getMenuManager());
 
         MenuBarFactory mbf = new MenuBarFactory(menuManager);
-        frame.setJMenuBar(mbf.createMenuBar());
+        JMenuBar menuBar = mbf.createMenuBar();
+        frame.setJMenuBar(null);
 
         ModernToolBar mtb = new ModernToolBar(menuManager, filterToolBarManager);
         JToolBar toolbar = mtb.createToolBar();
@@ -2604,7 +2617,9 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
         toolbar.add(((DefaultFrameManager)getFrameManager()).getProjectComboPanel());
         toolbar.add(Box.createRigidArea(new Dimension(8, 0)));
 
-        frame.getContentPane().add(toolbar, java.awt.BorderLayout.NORTH);
+        frame.getContentPane().setBackground(NomadPlanColors.appBackground());
+        ModernHeaderPanel headerPanel = new ModernHeaderPanel(menuBar, toolbar);
+        frame.getContentPane().add(headerPanel, java.awt.BorderLayout.NORTH);
     }
 
 

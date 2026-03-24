@@ -60,12 +60,14 @@ import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.UIManager;
+import javax.swing.BorderFactory;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.pm.graphic.model.cache.GraphicNode;
 import com.projectlibre1.pm.graphic.spreadsheet.SpreadSheetParams;
+import com.projectlibre1.theme.NomadPlanColors;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.field.Field;
 import com.projectlibre1.util.Environment;
 
@@ -90,20 +92,17 @@ public class SpreadSheetRowHeaderRenderer extends DefaultTableCellRenderer  impl
 		else{
 			component=(JLabel)super.getTableCellRendererComponent(table, value, isSelected,hasFocus, row, column);
 
-			component.setForeground (table.getTableHeader().getForeground());
-			if (Environment.isNewLaf()||Environment.isMac())
-				component.setBackground(isSelected ? GraphicManager.getInstance().getLafManager().getSelectedBackgroundColor() : GraphicManager.getInstance().getLafManager().getUnselectedBackgroundColor());
-			else
-				component.setBackground(isSelected ? GraphicManager.getInstance().getLafManager().getSelectedBackgroundColor() : table.getTableHeader().getBackground());
+			component.setOpaque(true);
+			component.setForeground(NomadPlanColors.textSecondary());
+			component.setBackground(table.getTableHeader().getBackground());
 
-			component.setFont (table.getTableHeader ().getFont());
+			component.setFont(table.getTableHeader().getFont().deriveFont(11.5f));
 		}
 		component.setHorizontalAlignment (CENTER);
 		component.setText (value == null ? "" : value.toString ());
-		if (!Environment.isNewLaf())
-			component.setBorder (UIManager.getBorder ("TableHeader.cellBorder"));
-//			component.setBorder ((isSelected)?BorderFactory.createLoweredBevelBorder():UIManager.getBorder ("TableHeader.cellBorder"));
-		component.setBorder(null);
+		component.setBorder(table == null
+			? BorderFactory.createEmptyBorder()
+			: NomadPlanUi.createHeaderCellBorder(true));
 		return component;
 	}
 

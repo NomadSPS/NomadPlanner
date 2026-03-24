@@ -123,6 +123,7 @@ import com.projectlibre1.undo.CalendarEdit;
 import com.projectlibre1.undo.UndoController;
 import com.projectlibre1.util.Alert;
 import com.projectlibre1.util.DateTime;
+import com.projectlibre1.theme.NomadPlanUi;
 
 
 /**
@@ -578,16 +579,19 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 	protected void initControls() {
 	    calendarListModel = new DefaultListModel();
 	    calendarList = new JList(calendarListModel);
+	    NomadPlanUi.configurePopupList(calendarList);
 	    calendarList.setCellRenderer(new ListRenderer());
 	    calendarList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    fillInCalendarNames();
 
 	    weekDayListModel = new DefaultListModel();
 	    weekDayList = new JList(weekDayListModel);
+	    NomadPlanUi.configurePopupList(weekDayList);
 	    weekDayList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 	    exceptionListModel = new DefaultListModel();
 	    exceptionList = new JList(exceptionListModel);
+	    NomadPlanUi.configurePopupList(exceptionList);
 	    exceptionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 	    calendarNameText = new JLabel();
@@ -1308,28 +1312,29 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 	}
 
 	private JComponent createCalendarListPanel() {
-		JPanel panel = new JPanel(new BorderLayout(0, 6));
-		panel.setBorder(BorderFactory.createTitledBorder(Messages.getString("ChangeWorkingTimeDialogBox.Calendars")));
 		JScrollPane scrollPane = new JScrollPane(calendarList);
 		scrollPane.setPreferredSize(new Dimension(220, 420));
-		panel.add(scrollPane, BorderLayout.CENTER);
-		return panel;
+		NomadPlanUi.prepareDialogScrollPane(scrollPane);
+		return NomadPlanUi.wrapDialogSection(Messages.getString("ChangeWorkingTimeDialogBox.Calendars"), scrollPane);
 	}
 
 	private JComponent createCalendarPanel() {
 		JPanel panel = new JPanel(new BorderLayout(0, 6));
-		panel.setBorder(BorderFactory.createTitledBorder(Messages.getString("ChangeWorkingTimeDialogBox.CalendarView")));
+		panel.setOpaque(false);
 
 		JPanel headerPanel = new JPanel(new BorderLayout(0, 2));
+		headerPanel.setOpaque(false);
 		headerPanel.add(calendarNameText, BorderLayout.NORTH);
 		headerPanel.add(basedOnText, BorderLayout.SOUTH);
 		panel.add(headerPanel, BorderLayout.NORTH);
 
 		JPanel centerPanel = new JPanel(new BorderLayout(0, 6));
+		centerPanel.setOpaque(false);
 		centerPanel.add(sdCalendar, BorderLayout.CENTER);
 
 		JPanel buttonPanel=new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		buttonPanel.setOpaque(false);
 		JButton backButton=new JButton(IconManager.getIcon("calendar.back")); //$NON-NLS-1$
 		backButton.addActionListener(new ActionListener(){
 	        public void actionPerformed(ActionEvent e) {
@@ -1370,31 +1375,27 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 		centerPanel.add(buttonPanel, BorderLayout.SOUTH);
 
 		panel.add(centerPanel, BorderLayout.CENTER);
-		return panel;
+		NomadPlanUi.applyFlatDialogBody(panel);
+		return NomadPlanUi.wrapDialogSection(Messages.getString("ChangeWorkingTimeDialogBox.CalendarView"), panel);
 	}
 
 	private JComponent createWorkWeeksPanel() {
-		JPanel panel = new JPanel(new BorderLayout(0, 6));
-		panel.setBorder(BorderFactory.createTitledBorder(Messages.getString("ChangeWorkingTimeDialogBox.WorkWeeks")));
-		panel.add(new JScrollPane(weekDayList), BorderLayout.CENTER);
-		return panel;
+		JScrollPane scrollPane = new JScrollPane(weekDayList);
+		NomadPlanUi.prepareDialogScrollPane(scrollPane);
+		return NomadPlanUi.wrapDialogSection(Messages.getString("ChangeWorkingTimeDialogBox.WorkWeeks"), scrollPane);
 	}
 
 	private JComponent createExceptionsPanel() {
-		JPanel panel = new JPanel(new BorderLayout(0, 6));
-		panel.setBorder(BorderFactory.createTitledBorder(Messages.getString("ChangeWorkingTimeDialogBox.Exceptions")));
-		panel.add(new JScrollPane(exceptionList), BorderLayout.CENTER);
-		return panel;
+		JScrollPane scrollPane = new JScrollPane(exceptionList);
+		NomadPlanUi.prepareDialogScrollPane(scrollPane);
+		return NomadPlanUi.wrapDialogSection(Messages.getString("ChangeWorkingTimeDialogBox.Exceptions"), scrollPane);
 	}
 
 	private JComponent createDetailsPanel() {
 		FormLayout settingsLayout = new FormLayout("right:70dlu,3dlu,110dlu:grow", //$NON-NLS-1$
 		createDetailsRowSpec());
 		DefaultFormBuilder settingBuilder = new DefaultFormBuilder(settingsLayout);
-		settingBuilder.setDefaultDialogBorder();
-
-		JPanel detailPanel = new JPanel(new BorderLayout());
-		detailPanel.setBorder(BorderFactory.createTitledBorder(Messages.getString("ChangeWorkingTimeDialogBox.Details")));
+		settingBuilder.setBorder(NomadPlanUi.createFlatDialogBodyBorder());
 
 		CellConstraints cc = new CellConstraints();
 		settingBuilder.add(selectionSummaryText, cc.xyw(1, settingBuilder.getRow(), 3));
@@ -1418,8 +1419,9 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 			settingBuilder.add(timeEnd[i], cc.xy(3, settingBuilder.getRow()));
 		}
 
-		detailPanel.add(settingBuilder.getPanel(), BorderLayout.CENTER);
-		return detailPanel;
+		JComponent panel = settingBuilder.getPanel();
+		NomadPlanUi.applyFlatDialogBody(panel);
+		return NomadPlanUi.wrapDialogSection(Messages.getString("ChangeWorkingTimeDialogBox.Details"), panel);
 	}
 
 	private String createDetailsRowSpec() {
@@ -1436,6 +1438,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 
 	private JComponent createSummaryPanel() {
 		JPanel panel = new JPanel(new GridLayout(2, 1, 0, 6));
+		panel.setOpaque(false);
 		panel.add(createWorkWeeksPanel());
 		panel.add(createExceptionsPanel());
 		return panel;
@@ -1446,6 +1449,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 		initControls();
 
 		JPanel rightPanel = new JPanel(new BorderLayout(0, 8));
+		rightPanel.setOpaque(false);
 		rightPanel.add(createCalendarPanel(), BorderLayout.CENTER);
 
 		JSplitPane lowerSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -1462,6 +1466,7 @@ public class ChangeWorkingTimeDialogBox extends AbstractDialog{
 		JPanel content = new JPanel(new BorderLayout());
 		content.add(mainSplit, BorderLayout.CENTER);
 		content.setPreferredSize(new Dimension(980, 680));
+		NomadPlanUi.applyFlatDialogBody(content);
 		return content;
 	}
 

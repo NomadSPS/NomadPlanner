@@ -54,14 +54,22 @@
 package com.projectlibre1.menu;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.border.MatteBorder;
 
 import com.projectlibre1.pm.graphic.IconManager;
 import com.projectlibre1.theme.ModernIcons;
+import com.projectlibre1.theme.NomadPlanColors;
+import com.projectlibre1.theme.NomadPlanThemeTokens;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.toolbar.FilterToolBarManager;
 
 /**
@@ -69,6 +77,8 @@ import com.projectlibre1.toolbar.FilterToolBarManager;
  * Uses standard Swing JToolBar with FlatLaf styling.
  */
 public class ModernToolBar implements MenuActionConstants {
+
+    private static final int ICON_SIZE = 20;
 
     private final MenuManager menuManager;
     private final FilterToolBarManager filterToolBarManager;
@@ -80,206 +90,197 @@ public class ModernToolBar implements MenuActionConstants {
         this.filterToolBarManager = filterToolBarManager;
     }
 
-    /**
-     * Creates and returns the fully populated toolbar.
-     */
     public JToolBar createToolBar() {
         toolBar = new JToolBar();
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
+        NomadPlanUi.applyToolbarStyle(toolBar);
 
-        // -- File ops --
         addButton(ACTION_SAVE_PROJECT, "menu24.save", "Save");
         addButton(ACTION_UNDO, "menu24.undo", "Undo");
         addButton(ACTION_REDO, "menu24.redo", "Redo");
 
-        toolBar.addSeparator();
+        addGroupSeparator();
 
-        // -- Edit ops --
         addButton(ACTION_INSERT_TASK, "menu24.insertTask", "Insert Task");
         addButton(ACTION_DELETE, "menu24.delete", "Delete");
         addButton(ACTION_INDENT, "menu24.indent", "Indent");
         addButton(ACTION_OUTDENT, "menu24.outdent", "Outdent");
 
-        toolBar.addSeparator();
+        addGroupSeparator();
 
-        // -- Links --
         addButton(ACTION_LINK, "menu24.link", "Link");
         addButton(ACTION_UNLINK, "menu24.unlink", "Unlink");
 
-        toolBar.addSeparator();
+        addGroupSeparator();
 
-        // -- Info --
         addButton(ACTION_INFORMATION, "menu24.taskInformation", "Information");
         addButton(ACTION_NOTES, "menu24.notes", "Notes");
         addButton(ACTION_CHANGE_WORKING_TIME, "menu24.calendarManager", "Calendar");
         addButton(ACTION_CALENDAR_OPTIONS, "menu24.workingTime", "Working Time");
 
-        toolBar.addSeparator();
+        addGroupSeparator();
 
-        // -- View switcher (toggle buttons in a ButtonGroup) --
         ButtonGroup viewGroup = new ButtonGroup();
         addToggleButton(ACTION_GANTT, "view.gantt", "Gantt", viewGroup, true);
         addToggleButton(ACTION_NETWORK, "view.network", "Network", viewGroup, false);
         addToggleButton(ACTION_RESOURCES, "view.resources", "Resources", viewGroup, false);
 
-        toolBar.addSeparator();
+        addGroupSeparator();
 
-        // -- Zoom --
         addButton(ACTION_ZOOM_IN, "menu24.zoomin", "Zoom In");
         addButton(ACTION_ZOOM_OUT, "menu24.zoomout", "Zoom Out");
         addButton(ACTION_SCROLL_TO_TASK, "menu24.scrollToTask", "Scroll to Task");
 
-        toolBar.addSeparator();
+        addGroupSeparator();
 
-        // -- Summary colors --
         addButton(ACTION_WBS_SUMMARY_COLORS, "menu24.wbsSummaryColors", "WBS Summary Colors");
 
-        toolBar.addSeparator();
+        addGroupSeparator();
 
-        // -- Driving path --
         addStandaloneToggleButton(ACTION_DRIVING_PATH_BACKWARD, "menu24.drivingPathBackward", "Driving Path Backward");
         addStandaloneToggleButton(ACTION_DRIVING_PATH_FORWARD, "menu24.drivingPathForward", "Driving Path Forward");
         addStandaloneToggleButton(ACTION_DRIVING_PATH_BOTH, "menu24.drivingPathBoth", "Driving Path Backward + Forward");
 
-        toolBar.addSeparator();
+        addGroupSeparator();
 
-        // -- Search --
         addButton(ACTION_FIND, "menu24.find", "Find");
 
-        toolBar.addSeparator();
+        addGroupSeparator();
 
-        // -- Filter toolbar (combo boxes for filter/sort/group) --
         if (filterToolBarManager != null) {
-            javax.swing.JPanel filterPanel = new javax.swing.JPanel(
-                new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
+            JPanel filterPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 2, 0));
             filterPanel.setOpaque(false);
+            filterPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
             filterToolBarManager.addButtonsInRibbonBand(filterPanel);
             toolBar.add(filterPanel);
         }
 
-        toolBar.addSeparator();
-
-        // -- Theme toggle (Dark/Light) --
-        themeToggle = createThemeToggle();
-        toolBar.add(themeToggle);
-
         return toolBar;
     }
 
-    /**
-     * Returns the underlying JToolBar (only valid after createToolBar()).
-     */
     public JToolBar getToolBar() {
         return toolBar;
     }
 
-    // ---- Helper: icon-only action button ----
-
-    private static final int ICON_SIZE = 20;
-
     private void addButton(String actionId, String iconKey, String tooltip) {
         Action action = menuManager.getActionFromId(actionId);
-        JButton btn;
-        if (action != null) {
-            btn = new JButton(action);
-        } else {
-            btn = new JButton();
-            btn.setEnabled(false);
+        JButton button = action != null ? new JButton(action) : new JButton();
+        if (action == null) {
+            button.setEnabled(false);
         }
-        btn.setText(null);
-        btn.setToolTipText(tooltip);
-        btn.setFocusable(false);
-        btn.putClientProperty("JButton.buttonType", "toolBarButton");
-        btn.setMargin(new java.awt.Insets(4, 4, 4, 4));
-
-        javax.swing.Icon icon = getScaledIcon(iconKey);
-        if (icon != null) {
-            btn.setIcon(icon);
-        } else {
-            btn.setText(tooltip.length() > 2 ? tooltip.substring(0, 2) : tooltip);
-        }
-
-        toolBar.add(btn);
-        menuManager.registerToolButton(actionId, btn);
+        prepareButton(button, iconKey, tooltip, "toolBarButton");
+        toolBar.add(button);
+        menuManager.registerToolButton(actionId, button);
     }
 
-    private void addToggleButton(String actionId, String iconKey, String tooltip,
-            ButtonGroup group, boolean selected) {
+    private void addTextButton(String actionId, String iconKey, String label) {
         Action action = menuManager.getActionFromId(actionId);
-        JToggleButton btn;
-        if (action != null) {
-            btn = new JToggleButton(action);
-        } else {
-            btn = new JToggleButton();
-            btn.setEnabled(false);
+        JButton button = action != null ? new JButton(action) : new JButton();
+        if (action == null) {
+            button.setEnabled(false);
         }
-        btn.setText(null);
-        btn.setToolTipText(tooltip);
-        btn.setFocusable(false);
-        btn.setSelected(selected);
-        btn.putClientProperty("JButton.buttonType", "roundRect");
-        btn.setMargin(new java.awt.Insets(4, 4, 4, 4));
+        prepareTextButton(button, iconKey, label, "toolBarButton");
+        toolBar.add(button);
+        menuManager.registerToolButton(actionId, button);
+    }
 
-        javax.swing.Icon icon = getScaledIcon(iconKey);
-        if (icon != null) {
-            btn.setIcon(icon);
-        } else {
-            btn.setText(tooltip.length() > 2 ? tooltip.substring(0, 2) : tooltip);
+    private void addToggleButton(String actionId, String iconKey, String tooltip, ButtonGroup group, boolean selected) {
+        Action action = menuManager.getActionFromId(actionId);
+        JToggleButton button = action != null ? new JToggleButton(action) : new JToggleButton();
+        if (action == null) {
+            button.setEnabled(false);
         }
+        prepareButton(button, iconKey, tooltip, "roundRect");
+        button.setSelected(selected);
+        group.add(button);
+        toolBar.add(button);
+        menuManager.registerToolButton(actionId, button);
+    }
 
-        group.add(btn);
-        toolBar.add(btn);
-        menuManager.registerToolButton(actionId, btn);
+    private void addTextToggleButton(String actionId, String iconKey, String label, ButtonGroup group, boolean selected) {
+        Action action = menuManager.getActionFromId(actionId);
+        JToggleButton button = action != null ? new JToggleButton(action) : new JToggleButton();
+        if (action == null) {
+            button.setEnabled(false);
+        }
+        prepareTextButton(button, iconKey, label, "toolBarButton");
+        button.setSelected(selected);
+        group.add(button);
+        toolBar.add(button);
+        menuManager.registerToolButton(actionId, button);
     }
 
     private void addStandaloneToggleButton(String actionId, String iconKey, String tooltip) {
         Action action = menuManager.getActionFromId(actionId);
-        JToggleButton btn;
-        if (action != null) {
-            btn = new JToggleButton(action);
-        } else {
-            btn = new JToggleButton();
-            btn.setEnabled(false);
+        JToggleButton button = action != null ? new JToggleButton(action) : new JToggleButton();
+        if (action == null) {
+            button.setEnabled(false);
         }
-        btn.setText(null);
-        btn.setToolTipText(tooltip);
-        btn.setFocusable(false);
-        btn.putClientProperty("JButton.buttonType", "roundRect");
-        btn.setMargin(new java.awt.Insets(4, 4, 4, 4));
+        prepareButton(button, iconKey, tooltip, "roundRect");
+        toolBar.add(button);
+        menuManager.registerToolButton(actionId, button);
+    }
+
+    private void prepareButton(javax.swing.AbstractButton button, String iconKey, String tooltip, String buttonType) {
+        button.setText(null);
+        button.setToolTipText(tooltip);
+        button.putClientProperty("JButton.buttonType", buttonType);
+        NomadPlanUi.configureToolbarButton(button);
 
         javax.swing.Icon icon = getScaledIcon(iconKey);
         if (icon != null) {
-            btn.setIcon(icon);
+            button.setIcon(icon);
         } else {
-            btn.setText(tooltip.length() > 2 ? tooltip.substring(0, 2) : tooltip);
+            button.setText(tooltip.length() > 2 ? tooltip.substring(0, 2) : tooltip);
         }
-
-        toolBar.add(btn);
-        menuManager.registerToolButton(actionId, btn);
     }
 
-    /**
-     * Returns a vector Icon that paints directly in the Graphics context,
-     * or falls back to a scaled bitmap. Direct painting ensures crisp
-     * rendering on HiDPI displays since the Graphics2D already carries
-     * the display scale transform.
-     */
+    private void prepareTextButton(javax.swing.AbstractButton button, String iconKey, String label, String buttonType) {
+        button.setText(label);
+        button.setToolTipText(label);
+        button.putClientProperty("JButton.buttonType", buttonType);
+
+        javax.swing.Icon icon = getScaledIcon(iconKey);
+        if (icon != null) {
+            button.setIcon(icon);
+        }
+        NomadPlanUi.configureToolbarTextButton(button);
+    }
+
+    private void addGroupSeparator() {
+        toolBar.add(createGroupSeparator());
+    }
+
+    private static JLabel createToolbarCaption(String text) {
+        return NomadPlanUi.createToolbarCaption(text);
+    }
+
+    private static JComponent createGroupSeparator() {
+        JPanel separator = new JPanel();
+        separator.setOpaque(false);
+        separator.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(5, 5, 5, 5),
+            new MatteBorder(0, 0, 0, 1, NomadPlanUi.subtleHeaderDivider())));
+        separator.setPreferredSize(new java.awt.Dimension(11, NomadPlanThemeTokens.toolbarButtonSize()));
+        separator.setMinimumSize(separator.getPreferredSize());
+        separator.setMaximumSize(separator.getPreferredSize());
+        return separator;
+    }
+
     private static javax.swing.Icon getScaledIcon(String iconKey) {
         if (ModernIcons.hasIcon(iconKey)) {
             return new VectorToolBarIcon(ModernIcons.getPainter(iconKey), ICON_SIZE);
         }
-        // Fall back to bitmap icons, scaling if needed
         ImageIcon icon = IconManager.getIcon(iconKey);
         if (icon != null && (icon.getIconWidth() != ICON_SIZE || icon.getIconHeight() != ICON_SIZE)) {
             java.awt.Image scaled = icon.getImage().getScaledInstance(
-                    ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
+                ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
             return new ImageIcon(scaled);
         }
         return icon;
     }
 
-    /** Paints a ModernIcons painter directly — no intermediate BufferedImage. */
     private static class VectorToolBarIcon implements javax.swing.Icon {
         private final ModernIcons.IconPainter painter;
         private final int size;
@@ -290,33 +291,47 @@ public class ModernToolBar implements MenuActionConstants {
         }
 
         @Override
-        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+        public void paintIcon(java.awt.Component component, java.awt.Graphics g, int x, int y) {
             java.awt.Graphics2D g2d = (java.awt.Graphics2D) g.create();
             g2d.translate(x, y);
             painter.paint(g2d, size, size);
             g2d.dispose();
         }
 
-        @Override public int getIconWidth() { return size; }
-        @Override public int getIconHeight() { return size; }
+        @Override
+        public int getIconWidth() {
+            return size;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return size;
+        }
     }
 
     private static JToggleButton createThemeToggle() {
-        boolean dark = com.projectlibre1.theme.NomadPlanColors.isDarkMode();
+        boolean dark = NomadPlanColors.isDarkMode();
         JToggleButton toggle = new JToggleButton(dark ? "Light" : "Dark");
         toggle.setSelected(dark);
         toggle.setToolTipText("Toggle light/dark theme");
-        toggle.setFocusable(false);
-        toggle.setFont(toggle.getFont().deriveFont(11f));
-        toggle.setMargin(new java.awt.Insets(2, 8, 2, 8));
+        NomadPlanUi.configureToolbarButton(toggle);
+        toggle.setFont(toggle.getFont().deriveFont(11.5f));
+        toggle.setForeground(NomadPlanColors.textPrimary());
+        toggle.setBackground(NomadPlanColors.surfaceRaised());
+        toggle.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(NomadPlanColors.border()),
+            BorderFactory.createEmptyBorder(0, 7, 0, 7)));
+        toggle.setPreferredSize(new java.awt.Dimension(66, NomadPlanThemeTokens.toolbarButtonSize()));
+        toggle.setMinimumSize(toggle.getPreferredSize());
+        toggle.setMaximumSize(toggle.getPreferredSize());
         toggle.addActionListener(e -> {
             com.projectlibre1.pm.graphic.frames.GraphicManager gm =
                 com.projectlibre1.pm.graphic.frames.GraphicManager.getInstance();
             if (gm != null) {
                 gm.getLafManager().toggleTheme();
             }
-            toggle.setText(com.projectlibre1.theme.NomadPlanColors.isDarkMode() ? "Light" : "Dark");
-            toggle.setSelected(com.projectlibre1.theme.NomadPlanColors.isDarkMode());
+            toggle.setText(NomadPlanColors.isDarkMode() ? "Light" : "Dark");
+            toggle.setSelected(NomadPlanColors.isDarkMode());
         });
         return toggle;
     }

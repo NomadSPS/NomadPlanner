@@ -59,18 +59,19 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.border.Border;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.layout.FormLayout;
 import com.projectlibre1.help.HelpUtil;
 import com.projectlibre1.menu.MenuManager;
 import com.projectlibre1.pm.graphic.IconManager;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.util.Environment;
 
 public final class WelcomeDialog extends AbstractDialog {
@@ -103,7 +104,6 @@ public final class WelcomeDialog extends AbstractDialog {
 	private MenuManager menuManager;
 	// use property utils to copy to project like struts
 
-	ButtonGroup radioGroup;
 	JButton createProject;
 	JButton openProject;
 	JButton manageResources;
@@ -138,6 +138,9 @@ public final class WelcomeDialog extends AbstractDialog {
 		createProject = new JButton(Messages.getString("Text.createProject"),IconManager.getIcon("menu24.new"));
 		openProject = new JButton(Messages.getString("Text.openProject"),IconManager.getIcon("menu24.open"));
 		manageResources = new JButton(Messages.getString("Text.manageResources"),IconManager.getIcon("view.resources"));
+		styleActionButton(createProject, true);
+		styleActionButton(openProject, false);
+		styleActionButton(manageResources, false);
 		
 		HelpUtil.addDocHelp(createProject,"Creating_a_Project");
 		HelpUtil.addDocHelp(manageResources,"Managing_your_resource_pool");
@@ -171,28 +174,34 @@ public final class WelcomeDialog extends AbstractDialog {
 	 */
 
 	public JComponent createContentPanel() {
-		// Separating the component initialization and configuration
-		// from the layout code makes both parts easier to read.
 		initControls();
-		//TODO set minimum size
-		FormLayout layout = new FormLayout("default, 3dlu, default, 3dlu, default", // cols //$NON-NLS-1$
-				"p, 8dlu, p, 3dlu, p, 3dlu, p, 3dlu"); // rows //$NON-NLS-1$
 
-		// Create a builder that assists in adding components to the container.
-		// Wrap the panel with a standardized border.
-		DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-		builder.setBorder(BorderFactory.createEmptyBorder(20,20,20,20)); // use bigger border to fit title bar text
-		builder.append(Messages.getString("WelcomeDialog.WhatWouldYouLikeToDo") + "      "); // adding spaces to widen dialog //$NON-NLS-1$ //$NON-NLS-2$
-		builder.nextLine(2);
-		builder.append(createProject);
-		builder.nextLine(2);
-		builder.append(openProject);
+		JPanel content = new JPanel();
+		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+		content.setBorder(NomadPlanUi.createFlatDialogBodyBorder());
+
+		JLabel title = new JLabel(Messages.getString("WelcomeDialog.WhatWouldYouLikeToDo"));
+		title.setHorizontalAlignment(SwingConstants.LEFT);
+		title.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+		title.setFont(title.getFont().deriveFont(java.awt.Font.BOLD, 18f));
+		content.add(title);
+		content.add(Box.createVerticalStrut(12));
+		content.add(createProject);
+		content.add(Box.createVerticalStrut(8));
+		content.add(openProject);
 		if (Environment.isAdministrator()) {
-			builder.nextLine(2);
-			builder.append(manageResources);
+			content.add(Box.createVerticalStrut(8));
+			content.add(manageResources);
 		}
 		requestFocusInWindow();
-		return builder.getPanel();
+		NomadPlanUi.applyFlatDialogBody(content);
+		return content;
+	}
+
+	private void styleActionButton(JButton button, boolean primary) {
+		NomadPlanUi.configureDialogActionButton(button, primary);
+		button.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+		button.setHorizontalAlignment(SwingConstants.LEFT);
 	}
 
 	/**

@@ -53,18 +53,20 @@
  *******************************************************************************/
 package com.projectlibre1.menu;
 
-import java.awt.event.ActionEvent;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.ImageIcon;
 
 import com.projectlibre1.pm.graphic.IconManager;
+import com.projectlibre1.theme.NomadPlanUi;
 
 /**
  * Builds a standard JMenuBar to replace the Flamingo ribbon menu system.
@@ -83,6 +85,7 @@ public class MenuBarFactory implements MenuActionConstants {
      */
     public JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
+        NomadPlanUi.applyHeaderMenuBarStyle(menuBar);
 
         menuBar.add(createFileMenu());
         menuBar.add(createEditMenu());
@@ -98,8 +101,7 @@ public class MenuBarFactory implements MenuActionConstants {
     // ---- File menu ----
 
     private JMenu createFileMenu() {
-        JMenu menu = new JMenu("File");
-        menu.setMnemonic(KeyEvent.VK_F);
+        JMenu menu = createTopLevelMenu("File", KeyEvent.VK_F);
 
         addItem(menu, ACTION_NEW_PROJECT, "New Project", KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK);
         addItem(menu, ACTION_OPEN_PROJECT, "Open", KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK);
@@ -119,8 +121,7 @@ public class MenuBarFactory implements MenuActionConstants {
     // ---- Edit menu ----
 
     private JMenu createEditMenu() {
-        JMenu menu = new JMenu("Edit");
-        menu.setMnemonic(KeyEvent.VK_E);
+        JMenu menu = createTopLevelMenu("Edit", KeyEvent.VK_E);
 
         addItem(menu, ACTION_UNDO, "Undo", KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK);
         addItem(menu, ACTION_REDO, "Redo", KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK);
@@ -139,8 +140,7 @@ public class MenuBarFactory implements MenuActionConstants {
     // ---- View menu ----
 
     private JMenu createViewMenu() {
-        JMenu menu = new JMenu("View");
-        menu.setMnemonic(KeyEvent.VK_V);
+        JMenu menu = createTopLevelMenu("View", KeyEvent.VK_V);
 
         addItem(menu, ACTION_GANTT, "Gantt", 0, 0);
         addItem(menu, ACTION_NETWORK, "Network", 0, 0);
@@ -183,8 +183,7 @@ public class MenuBarFactory implements MenuActionConstants {
     // ---- Task menu ----
 
     private JMenu createTaskMenu() {
-        JMenu menu = new JMenu("Task");
-        menu.setMnemonic(KeyEvent.VK_T);
+        JMenu menu = createTopLevelMenu("Task", KeyEvent.VK_T);
 
         addItem(menu, ACTION_INSERT_TASK, "Insert Task", KeyEvent.VK_INSERT, 0);
         addItem(menu, ACTION_DELETE, "Delete", KeyEvent.VK_DELETE, 0);
@@ -206,8 +205,7 @@ public class MenuBarFactory implements MenuActionConstants {
     // ---- Resource menu ----
 
     private JMenu createResourceMenu() {
-        JMenu menu = new JMenu("Resource");
-        menu.setMnemonic(KeyEvent.VK_R);
+        JMenu menu = createTopLevelMenu("Resource", KeyEvent.VK_R);
 
         addItem(menu, ACTION_INFORMATION, "Information", 0, 0);
         addItem(menu, ACTION_NOTES, "Notes", 0, 0);
@@ -220,8 +218,7 @@ public class MenuBarFactory implements MenuActionConstants {
     // ---- Project menu ----
 
     private JMenu createProjectMenu() {
-        JMenu menu = new JMenu("Project");
-        menu.setMnemonic(KeyEvent.VK_P);
+        JMenu menu = createTopLevelMenu("Project", KeyEvent.VK_P);
 
         addItem(menu, ACTION_PROJECT_INFORMATION, "Project Information", 0, 0);
         addItem(menu, ACTION_CHANGE_WORKING_TIME, "Calendar", 0, 0);
@@ -240,8 +237,7 @@ public class MenuBarFactory implements MenuActionConstants {
     // ---- Help menu ----
 
     private JMenu createHelpMenu() {
-        JMenu menu = new JMenu("Help");
-        menu.setMnemonic(KeyEvent.VK_H);
+        JMenu menu = createTopLevelMenu("Help", KeyEvent.VK_H);
 
         addItem(menu, ACTION_PROJECTLIBRE_DOCUMENTATION, "Help", KeyEvent.VK_F1, 0);
         addItem(menu, ACTION_ABOUT_PROJECTLIBRE, "About", 0, 0);
@@ -279,5 +275,45 @@ public class MenuBarFactory implements MenuActionConstants {
             item.setAccelerator(KeyStroke.getKeyStroke(keyCode, modifiers));
         }
         menu.add(item);
+    }
+
+    private void configureMenu(JMenu menu) {
+        NomadPlanUi.configureTopLevelMenu(menu);
+    }
+
+    private JMenu createTopLevelMenu(String text, int mnemonic) {
+        JMenu menu = new HeaderMenu(text);
+        configureMenu(menu);
+        menu.setMnemonic(mnemonic);
+        return menu;
+    }
+
+    private static final class HeaderMenu extends JMenu {
+        private static final long serialVersionUID = 1L;
+
+        private HeaderMenu(String text) {
+            super(text);
+            setOpaque(false);
+        }
+
+        @Override
+        protected void paintComponent(Graphics graphics) {
+            boolean selected = isSelected() || getModel().isArmed();
+            boolean rollover = !selected && getModel().isRollover();
+            java.awt.Color previous = getForeground();
+            setForeground((selected || rollover)
+                ? com.projectlibre1.theme.NomadPlanColors.accent()
+                : com.projectlibre1.theme.NomadPlanColors.textPrimary());
+            super.paintComponent(graphics);
+            setForeground(previous);
+            if (selected) {
+                Graphics2D g2 = (Graphics2D) graphics.create();
+                g2.setColor(com.projectlibre1.theme.NomadPlanColors.alpha(
+                    com.projectlibre1.theme.NomadPlanColors.accent(),
+                    180));
+                g2.fillRoundRect(10, getHeight() - 2, Math.max(12, getWidth() - 20), 1, 1, 1);
+                g2.dispose();
+            }
+        }
     }
 }

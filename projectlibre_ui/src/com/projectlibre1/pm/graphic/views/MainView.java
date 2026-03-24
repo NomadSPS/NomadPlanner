@@ -65,6 +65,8 @@ import javax.swing.JViewport;
 import com.projectlibre1.pm.graphic.timescale.ScaledComponent;
 import com.projectlibre1.pm.graphic.views.synchro.ScrollPaneSynchronizer;
 import com.projectlibre1.pm.graphic.views.synchro.Synchronizer;
+import com.projectlibre1.theme.NomadPlanThemeTokens;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.timescale.TimeScaleEvent;
 import com.projectlibre1.timescale.TimeScaleListener;
 import com.projectlibre1.workspace.SavableToWorkspace;
@@ -86,9 +88,15 @@ public class MainView extends JSplitPane implements TimeScaleListener, SavableTo
     public MainView() {
         super(JSplitPane.VERTICAL_SPLIT);
         setOneTouchExpandable(true);
+        NomadPlanUi.applyWorkspaceBackground(this);
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(
+            NomadPlanThemeTokens.workspacePadding(),
+            NomadPlanThemeTokens.workspacePadding(),
+            NomadPlanThemeTokens.workspacePadding(),
+            NomadPlanThemeTokens.workspacePadding()));
+        NomadPlanUi.applySplitPaneStyle(this);
         defaultDividerSize = getDividerSize();
         setDividerSize(0);
-        
     }
     public void setTop(Component top) {
     	if (top==null) return;

@@ -55,23 +55,20 @@
  *******************************************************************************/
 package com.projectlibre1.pm.graphic.spreadsheet.renderer;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.pm.graphic.model.cache.GraphicNode;
 import com.projectlibre1.pm.graphic.spreadsheet.SpreadSheetParams;
-import com.projectlibre1.pm.graphic.spreadsheet.common.CommonSpreadSheet;
 import com.projectlibre1.field.Field;
 import com.projectlibre1.theme.NomadPlanColors;
-import com.projectlibre1.util.Environment;
+import com.projectlibre1.theme.NomadPlanUi;
 /**
  *
  */
@@ -103,25 +100,17 @@ public class SpreadSheetColumnHeaderRenderer extends DefaultTableCellRenderer im
 		if (table!=null){
 			//CommonSpreadSheet sp=(CommonSpreadSheet)table;
 			//isSelected|=sp.getSelection().getColumnSelection().isSelectedIndex(column)&&table.getSelectedRowCount()==table.getRowCount();
-			component.setOpaque(Environment.isMac());
-			if (Environment.isNewLaf()) {
-				component.setForeground (NomadPlanColors.textPrimary());
-				component.setBackground(isSelected ? GraphicManager.getInstance().getLafManager().getSelectedBackgroundColor() : GraphicManager.getInstance().getLafManager().getUnselectedBackgroundColor());
-			} if (Environment.isMac()){
-				component.setForeground (isSelected ? NomadPlanColors.textPrimary() : table.getTableHeader().getForeground());
-				component.setBackground(isSelected ? GraphicManager.getInstance().getLafManager().getSelectedBackgroundColor() : GraphicManager.getInstance().getLafManager().getUnselectedBackgroundColor());
-			} else {
-				component.setForeground (isSelected ? NomadPlanColors.textPrimary() : table.getTableHeader().getForeground());
-				component.setBackground(isSelected ? GraphicManager.getInstance().getLafManager().getSelectedBackgroundColor() : table.getTableHeader ().getBackground());
-			}
+			component.setOpaque(true);
+			component.setForeground(NomadPlanColors.textPrimary());
+			component.setBackground(table.getTableHeader().getBackground());
 		}
 
-		component.setHorizontalAlignment (CENTER);
-		if (!Environment.isNewLaf()) {
-			component.setBorder(new LineBorder(NomadPlanColors.border()));
-		}
+		component.setHorizontalAlignment(LEFT);
+		component.setBorder(table == null
+			? BorderFactory.createEmptyBorder()
+			: NomadPlanUi.createHeaderCellBorder(column == table.getColumnCount() - 1));
 		if (override == null) {
-			if (table!=null) component.setFont (table.getTableHeader ().getFont().deriveFont(Font.BOLD ));
+			if (table!=null) component.setFont(table.getTableHeader().getFont().deriveFont(Font.BOLD, 12.0f));
 			component.setText (value == null ? "" : value.toString ());
 		}
 		return component;

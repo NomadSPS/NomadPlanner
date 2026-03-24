@@ -57,10 +57,15 @@ package com.projectlibre1.pm.graphic.laf;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -75,16 +80,21 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.graphic.configuration.shape.Colors;
+import com.projectlibre1.theme.InterFontLoader;
 import com.projectlibre1.theme.NomadPlanColors;
+import com.projectlibre1.theme.NomadPlanThemeTokens;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.util.Environment;
 import com.projectlibre.ui.ribbon.ProjectLibreRibbonUI;
 import java.util.prefs.Preferences;
 
 public class LafManagerImpl implements LafManager {
-    protected static LookAndFeel plaf = null; // for substance
+	protected static LookAndFeel plaf = null; // for substance
     protected static GraphicManager graphicManager;
 	private static Boolean lafOK = null;
     private static final String PREF_DARK_MODE = "nomadplan.darkMode";
+    private static final Set<String> AVAILABLE_FONTS = new HashSet<>(
+        Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
     public LafManagerImpl(GraphicManager graphicManager){
     	this.graphicManager=graphicManager;
     }
@@ -161,42 +171,139 @@ public class LafManagerImpl implements LafManager {
     }
 
     private void applyNomadPlanDefaults() {
-        UIManager.put("Component.focusColor", NomadPlanColors.accent());
+        InterFontLoader.ensureRegistered();
+        Font defaultFont = resolveDefaultFont();
+
+        UIManager.put("defaultFont", defaultFont);
+        UIManager.put("Button.font", defaultFont);
+        UIManager.put("ToggleButton.font", defaultFont);
+        UIManager.put("Label.font", defaultFont);
+        UIManager.put("Menu.font", defaultFont);
+        UIManager.put("MenuItem.font", defaultFont);
+        UIManager.put("CheckBoxMenuItem.font", defaultFont);
+        UIManager.put("RadioButtonMenuItem.font", defaultFont);
+        UIManager.put("ToolTip.font", defaultFont);
+        UIManager.put("Table.font", NomadPlanThemeTokens.uiFont(13f, Font.PLAIN));
+        UIManager.put("TableHeader.font", NomadPlanThemeTokens.uiFont(13f, Font.BOLD));
+        UIManager.put("TabbedPane.font", defaultFont);
+        UIManager.put("TextField.font", defaultFont);
+        UIManager.put("FormattedTextField.font", defaultFont);
+        UIManager.put("TextArea.font", defaultFont);
+        UIManager.put("ComboBox.font", defaultFont);
+
+        UIManager.put("Panel.background", NomadPlanColors.appBackground());
+        UIManager.put("Viewport.background", NomadPlanColors.background());
+        UIManager.put("ScrollPane.background", NomadPlanColors.background());
+        UIManager.put("MenuBar.background", NomadPlanColors.headerBackground());
+        UIManager.put("MenuBar.borderColor", NomadPlanColors.divider());
+        UIManager.put("Menu.background", NomadPlanColors.headerBackground());
+        UIManager.put("Menu.foreground", NomadPlanColors.textPrimary());
+        UIManager.put("Menu.selectionBackground", NomadPlanColors.headerBackground());
+        UIManager.put("Menu.selectionForeground", NomadPlanColors.accent());
+        UIManager.put("MenuItem.background", NomadPlanColors.headerBackground());
+        UIManager.put("MenuItem.foreground", NomadPlanColors.textPrimary());
+        UIManager.put("MenuItem.selectionBackground", NomadPlanColors.selectionFill());
+        UIManager.put("MenuItem.selectionForeground", NomadPlanColors.selectionText());
+        UIManager.put("PopupMenu.background", NomadPlanColors.background());
+        UIManager.put("PopupMenu.border", NomadPlanUi.createPopupBorder());
+
+        UIManager.put("Component.focusColor", NomadPlanColors.focusRing());
         UIManager.put("Component.focusWidth", 1);
-        UIManager.put("Button.arc", 8);
-        UIManager.put("Component.arc", 8);
-        UIManager.put("TextComponent.arc", 8);
+        UIManager.put("Component.innerFocusWidth", 0);
+        UIManager.put("Component.arc", NomadPlanThemeTokens.inputArc());
+        UIManager.put("Button.arc", NomadPlanThemeTokens.inputArc());
+        UIManager.put("TextComponent.arc", NomadPlanThemeTokens.inputArc());
+        UIManager.put("Component.focusWidth", 1);
         UIManager.put("ScrollBar.thumbArc", 999);
         UIManager.put("ScrollBar.thumbInsets", new javax.swing.plaf.InsetsUIResource(2, 2, 2, 2));
+        UIManager.put("ScrollBar.thumb", NomadPlanColors.borderStrong());
+        UIManager.put("ScrollBar.track", NomadPlanColors.surfaceMuted());
+
+        UIManager.put("Button.defaultBackground", NomadPlanColors.surfaceRaised());
+        UIManager.put("Button.background", NomadPlanColors.surfaceRaised());
+        UIManager.put("Button.foreground", NomadPlanColors.textPrimary());
+        UIManager.put("Button.toolbar.hoverBackground", NomadPlanThemeTokens.alpha(NomadPlanColors.selectionFill(), 120));
+        UIManager.put("Button.toolbar.pressedBackground", NomadPlanColors.headerSelectedBackground());
+        UIManager.put("Button.toolbar.selectedBackground", NomadPlanColors.headerSelectedBackground());
+        UIManager.put("Button.toolbar.selectedForeground", NomadPlanColors.textPrimary());
+        UIManager.put("ToggleButton.background", NomadPlanColors.surfaceRaised());
+        UIManager.put("ToggleButton.foreground", NomadPlanColors.textPrimary());
+        UIManager.put("ToggleButton.selectedBackground", NomadPlanColors.headerSelectedBackground());
+        UIManager.put("ToggleButton.selectedForeground", NomadPlanColors.textPrimary());
+        UIManager.put("ToggleButton.toolbar.hoverBackground", NomadPlanThemeTokens.alpha(NomadPlanColors.selectionFill(), 120));
+        UIManager.put("ToggleButton.toolbar.pressedBackground", NomadPlanColors.headerSelectedBackground());
+        UIManager.put("ToggleButton.toolbar.selectedBackground", NomadPlanColors.headerSelectedBackground());
+        UIManager.put("ToggleButton.toolbar.selectedForeground", NomadPlanColors.textPrimary());
+        UIManager.put("TextField.background", NomadPlanColors.background());
+        UIManager.put("TextField.foreground", NomadPlanColors.textPrimary());
+        UIManager.put("TextField.selectionBackground", NomadPlanColors.selectionFill());
+        UIManager.put("TextField.selectionForeground", NomadPlanColors.selectionText());
+        UIManager.put("ComboBox.background", NomadPlanColors.background());
+        UIManager.put("ComboBox.foreground", NomadPlanColors.textPrimary());
+        UIManager.put("ComboBox.selectionBackground", NomadPlanColors.selectionFill());
+        UIManager.put("ComboBox.selectionForeground", NomadPlanColors.selectionText());
+
+        UIManager.put("TabbedPane.background", NomadPlanColors.appBackground());
+        UIManager.put("TabbedPane.foreground", NomadPlanColors.textPrimary());
         UIManager.put("TabbedPane.selectedBackground", NomadPlanColors.background());
         UIManager.put("TabbedPane.underlineColor", NomadPlanColors.accent());
+        UIManager.put("TabbedPane.tabInsets", new javax.swing.plaf.InsetsUIResource(7, 12, 7, 12));
+        UIManager.put("TabbedPane.contentSeparatorColor", NomadPlanColors.divider());
 
-        // Table modernization: taller rows, horizontal lines only, alternating colors
-        UIManager.put("Table.rowHeight", 28);
+        UIManager.put("SplitPane.background", NomadPlanColors.appBackground());
+        UIManager.put("SplitPaneDivider.border", new javax.swing.border.EmptyBorder(0, 0, 0, 0));
+        UIManager.put("SplitPaneDivider.draggingColor", NomadPlanColors.borderStrong());
+
+        UIManager.put("ToolBar.background", NomadPlanColors.toolbarBackground());
+        UIManager.put("ToolBar.borderColor", NomadPlanColors.divider());
+        UIManager.put("ToolBar.separatorColor", NomadPlanColors.divider());
+        UIManager.put("ToolBar.gripColor", NomadPlanColors.borderStrong());
+
+        UIManager.put("Table.background", NomadPlanColors.background());
+        UIManager.put("Table.foreground", NomadPlanColors.textPrimary());
+        UIManager.put("Table.selectionBackground", NomadPlanColors.selectionFill());
+        UIManager.put("Table.selectionForeground", NomadPlanColors.selectionText());
+        UIManager.put("Table.focusCellForeground", NomadPlanColors.textPrimary());
+        UIManager.put("Table.focusCellBackground", NomadPlanColors.surfaceRaised());
+        UIManager.put("Table.rowHeight", NomadPlanThemeTokens.denseRowHeight());
         UIManager.put("Table.showHorizontalLines", true);
         UIManager.put("Table.showVerticalLines", false);
         UIManager.put("Table.intercellSpacing", new java.awt.Dimension(0, 1));
-        UIManager.put("Table.alternateRowColor", NomadPlanColors.surface());
+        UIManager.put("Table.gridColor", NomadPlanColors.border());
+        UIManager.put("Table.alternateRowColor", NomadPlanColors.surfaceMuted());
+        UIManager.put("TableHeader.background", NomadPlanColors.headerBackground());
+        UIManager.put("TableHeader.foreground", NomadPlanColors.textPrimary());
         UIManager.put("TableHeader.separatorColor", NomadPlanColors.border());
         UIManager.put("TableHeader.bottomSeparatorColor", NomadPlanColors.border());
 
-        // Clean toolbar appearance
-        UIManager.put("ToolBar.separatorColor", NomadPlanColors.border());
-        UIManager.put("ToolBar.borderColor", NomadPlanColors.border());
+        UIManager.put("List.background", NomadPlanColors.background());
+        UIManager.put("List.foreground", NomadPlanColors.textPrimary());
+        UIManager.put("List.selectionBackground", NomadPlanColors.selectionFill());
+        UIManager.put("List.selectionForeground", NomadPlanColors.selectionText());
+        UIManager.put("Tree.background", NomadPlanColors.background());
+        UIManager.put("Tree.foreground", NomadPlanColors.textPrimary());
+        UIManager.put("Tree.selectionBackground", NomadPlanColors.selectionFill());
+        UIManager.put("Tree.selectionForeground", NomadPlanColors.selectionText());
 
-        // Slightly larger default font for readability
-        java.awt.Font defaultFont = UIManager.getFont("defaultFont");
-        if (defaultFont != null && defaultFont.getSize() < 13) {
-            UIManager.put("defaultFont", defaultFont.deriveFont(13f));
-        }
-
-        // Ribbon band inner padding — more breathing room
         UIManager.put("RibbonBand.border",
-                new javax.swing.border.EmptyBorder(4, 6, 2, 6));
+            new javax.swing.border.EmptyBorder(4, 6, 2, 6));
+    }
 
-        // Subtle selection colors
-        UIManager.put("List.selectionBackground", NomadPlanColors.accent());
-        UIManager.put("Tree.selectionBackground", NomadPlanColors.accent());
+    private Font resolveDefaultFont() {
+        Font inter = InterFontLoader.deriveFont(13f, Font.PLAIN);
+        if (inter != null) {
+            return inter;
+        }
+        if (AVAILABLE_FONTS.contains("Segoe UI Variable Text")) {
+            return NomadPlanThemeTokens.uiFont(13f, Font.PLAIN);
+        }
+        if (AVAILABLE_FONTS.contains("Segoe UI")) {
+            return NomadPlanThemeTokens.uiFont(13f, Font.PLAIN);
+        }
+        if (AVAILABLE_FONTS.contains("SF Pro Text")) {
+            return NomadPlanThemeTokens.uiFont(13f, Font.PLAIN);
+        }
+        return NomadPlanThemeTokens.uiFont(13f, Font.PLAIN);
     }
 
     /* (non-Javadoc)
@@ -261,10 +368,10 @@ public class LafManagerImpl implements LafManager {
 
 
 	public Color getSelectedBackgroundColor() {
-		return NomadPlanColors.accent();
+		return NomadPlanColors.selectionFill();
 	}
 	public Color getUnselectedBackgroundColor() {
-		return NomadPlanColors.surface();
+		return NomadPlanColors.headerBackground();
 	}
 
 	public void dumpUIValues() {

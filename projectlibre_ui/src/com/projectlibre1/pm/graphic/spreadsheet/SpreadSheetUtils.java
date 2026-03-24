@@ -198,6 +198,7 @@ public class SpreadSheetUtils {
 	 */
 	public static JScrollPane makeSpreadsheetScrollPane(SpreadSheet spreadSheet) {
 		final JScrollPane spreadSheetScrollPane=new JScrollPane(spreadSheet);
+		com.projectlibre1.theme.NomadPlanUi.prepareScrollPaneForCard(spreadSheetScrollPane);
 		//a fix to resize column header when viewport size changes
 		spreadSheetScrollPane.getViewport().addChangeListener(new ChangeListener(){
 			private Dimension olddmain=null;

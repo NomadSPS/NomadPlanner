@@ -60,7 +60,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.BorderFactory;
 
 import com.projectlibre1.dialog.ColumnDialog;
 import com.projectlibre1.dialog.FieldAliasDialog;
@@ -70,6 +69,7 @@ import com.projectlibre1.pm.graphic.spreadsheet.common.CommonSpreadSheet;
 import com.projectlibre1.field.Field;
 import com.projectlibre1.graphic.configuration.SpreadSheetFieldArray;
 import com.projectlibre1.strings.Messages;
+import com.projectlibre1.theme.NomadPlanUi;
 import com.projectlibre1.util.Alert;
 
 /**
@@ -91,7 +91,7 @@ public class SpreadSheetColumnMenu extends JPopupMenu {
 	public SpreadSheetColumnMenu(CommonSpreadSheet spreadSheet, final int col) {
 		super();
 		// setLabel("");
-		setBorder(BorderFactory.createLineBorder(com.projectlibre1.theme.NomadPlanColors.border(), 1));
+		NomadPlanUi.applyPopupSurface(this);
 		final CommonSpreadSheet sp = spreadSheet;
 		final SpreadSheetFieldArray fields = (SpreadSheetFieldArray) sp.getFieldArray();
 		insert.setIcon(IconManager.getIcon("menu.insertColumn")); //$NON-NLS-1$
