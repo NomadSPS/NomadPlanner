@@ -138,6 +138,7 @@ import com.projectlibre1.configuration.FieldDictionary;
 import com.projectlibre1.configuration.Settings;
 import com.projectlibre1.contrib.ClassLoaderUtils;
 import com.projectlibre1.dialog.AboutDialog;
+import com.projectlibre1.dialog.ActivationDialog;
 import com.projectlibre1.dialog.AbstractDialog;
 import com.projectlibre1.dialog.BaselineDialog;
 import com.projectlibre1.dialog.FindDialog;
@@ -1009,6 +1010,7 @@ public class GraphicManager implements  FrameHolder, NamedFrameListener, WindowS
 		actionsMap.addHandler(ACTION_ABOUT_PROJECTLIBRE, new AboutAction());
 		actionsMap.addHandler(ACTION_PROJECTLIBRE, new ProjectLibreAction());
 		actionsMap.addHandler(ACTION_PROJECTLIBRE_DOCUMENTATION, new HelpAction());
+		actionsMap.addHandler(ACTION_ACTIVATION, new ActivationAction());
 		actionsMap.addHandler(ACTION_TIP_OF_THE_DAY, new TipOfTheDayAction());
 		actionsMap.addHandler(ACTION_PROJECT_INFORMATION, new ProjectInformationAction());
 		actionsMap.addHandler(ACTION_PROJECTS_DIALOG, new ProjectsDialogAction());
@@ -1178,6 +1180,14 @@ public class GraphicManager implements  FrameHolder, NamedFrameListener, WindowS
 		public void actionPerformed(ActionEvent arg0) {
 			setMeAsLastGraphicManager();
 			showHelpDialog();		}
+	}
+
+	public class ActivationAction extends MenuActionsMap.GlobalMenuAction {
+		private static final long serialVersionUID = 1L;
+		public void actionPerformed(ActionEvent arg0) {
+			setMeAsLastGraphicManager();
+			showActivationDialog();
+		}
 	}
 
 	public class TipOfTheDayAction extends MenuActionsMap.GlobalMenuAction {
@@ -2091,6 +2101,10 @@ protected boolean loadLocalDocument(String fileName,boolean merge){ //uses serve
     	}
     	helpDialog.setLocationRelativeTo(getFrame());//to center on screen
     	helpDialog.setVisible(true);
+    }
+
+    public void showActivationDialog() {
+    	ActivationDialog.showDialog(getFrame());
     }
 
 

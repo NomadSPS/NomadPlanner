@@ -75,6 +75,10 @@ import com.projectlibre1.configuration.ConfigurationReader;
 import com.projectlibre1.configuration.Dictionary;
 import com.projectlibre1.configuration.Settings;
 import com.projectlibre1.contrib.ClassLoaderUtils;
+import com.projectlibre1.activation.ActivationService;
+import com.projectlibre1.activation.ActivationSummary;
+import com.projectlibre1.dialog.ActivationDialog;
+import com.projectlibre1.dialog.ActivationUiSupport;
 import com.projectlibre1.dialog.LicenseDialog;
 import com.projectlibre1.dialog.LoginDialog;
 import com.projectlibre1.dialog.LoginForm;
@@ -419,6 +423,8 @@ public abstract class StartupFactory {
 	}
 	public void doStartupAction(final GraphicManager gm, final long projectId, final String[] projectUrls, final boolean welcome, boolean readOnly) {
 		if (Environment.isClientSide()) {
+			if (!ensureActivated(gm))
+				return;
 			if (projectId > 0) {
 
 				Boolean writable = null;
@@ -469,6 +475,26 @@ public abstract class StartupFactory {
 			}
 		}
 
+	}
+
+	private boolean ensureActivated(final GraphicManager gm) {
+		if (!Environment.isProjectLibre() || Environment.isPlugin()) {
+			return true;
+		}
+		if (!ActivationDialog.ensureActivated(gm.getFrame())) {
+			abort();
+			return false;
+		}
+		final ActivationSummary summary = ActivationService.getInstance().validateForStartup();
+		if (ActivationService.getInstance().shouldShowExpiryWarning(summary)) {
+			ActivationService.getInstance().markExpiryWarningShown();
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					Alert.warn(ActivationUiSupport.formatExpiryWarning(summary), gm.getFrame());
+				}
+			});
+		}
+		return true;
 	}
 
 

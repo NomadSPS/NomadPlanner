@@ -240,6 +240,7 @@ public class MenuBarFactory implements MenuActionConstants {
         JMenu menu = createTopLevelMenu("Help", KeyEvent.VK_H);
 
         addItem(menu, ACTION_PROJECTLIBRE_DOCUMENTATION, "Help", KeyEvent.VK_F1, 0);
+        addItem(menu, ACTION_ACTIVATION, "Activation...", 0, 0);
         addItem(menu, ACTION_ABOUT_PROJECTLIBRE, "About", 0, 0);
 
         return menu;

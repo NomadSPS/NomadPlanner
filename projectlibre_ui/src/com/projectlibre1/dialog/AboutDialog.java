@@ -68,6 +68,7 @@ import javax.swing.JLabel;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.projectlibre1.activation.ActivationService;
 import com.projectlibre1.main.Main;
 import com.projectlibre1.pm.graphic.IconManager;
 import com.projectlibre1.strings.Messages;
@@ -102,7 +103,7 @@ public final class AboutDialog extends AbstractDialog {
 		// from the layout code makes both parts easier to read.
 		//TODO set minimum size
 		FormLayout layout = new FormLayout("default", // cols //$NON-NLS-1$
-				"p, 3dlu,p, 3dlu, p, 3dlu, p, 10dlu,p"); // rows //$NON-NLS-1$
+				"p, 3dlu,p, 3dlu, p, 3dlu, p, 3dlu, p, 10dlu,p"); // rows //$NON-NLS-1$
 
 		// Create a builder that assists in adding components to the container.
 		// Wrap the panel with a standardized border.
@@ -116,6 +117,10 @@ public final class AboutDialog extends AbstractDialog {
 		builder.nextLine(2);
 		String version=VersionUtils.getVersion();
 		builder.append("Version "+(version==null?"Unknown":version)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$		
+		builder.nextLine(2);
+		builder.append(Messages.getStringWithParam("AboutDialog.ActivationStatus", new Object[] {
+			ActivationUiSupport.formatSummary(ActivationService.getInstance().getCurrentSummary())
+		}));
 		builder.nextLine(2);
 		builder.append(Messages.getString("AboutDialog.copyright")); //$NON-NLS-1$
 //		if (Environment.isProjectLibre()) {

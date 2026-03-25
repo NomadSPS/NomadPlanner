@@ -71,6 +71,7 @@ import javax.swing.JPanel;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.projectlibre1.activation.ActivationService;
 import com.projectlibre1.pm.graphic.IconManager;
 import com.projectlibre1.pm.graphic.frames.GraphicManager;
 import com.projectlibre1.configuration.Settings;
@@ -92,6 +93,8 @@ public final class HelpDialog extends AbstractDialog {
     JButton videos;
     JButton tipOfTheDay;
     JButton license;
+    JButton activation;
+    JLabel activationStatus;
 	private JPanel donatePanel;
 	public static HelpDialog getInstance(Frame owner) {
 		return new HelpDialog(owner);
@@ -157,6 +160,18 @@ public final class HelpDialog extends AbstractDialog {
 			}
 		});		
 
+		activation = new JButton(Messages.getString("ActivationDialog.HelpAction"));
+		activation.setEnabled(true);
+		activation.setToolTipText(Messages.getString("ActivationDialog.HelpAction"));
+		activation.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				ActivationDialog.showDialog(GraphicManager.getFrameInstance());
+				updateActivationStatus();
+			}
+		});
+		activationStatus = new JLabel();
+		updateActivationStatus();
+
 
 		super.initComponents();
 	}
@@ -175,9 +190,10 @@ public final class HelpDialog extends AbstractDialog {
 		// Separating the component initialization and configuration
 		// from the layout code makes both parts easier to read.
 		//TODO set minimum size
+		updateActivationStatus();
 		FormLayout layout = new FormLayout("250px,300px,250px" , // cols //$NON-NLS-1$
 			
-				"p, 6dlu, p, 6dlu, p, 6dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 6dlu, p, 6dlu, p, 6dlu, p, 10dlu, p, 6dlu, p, 6dlu, p"); // rows //$NON-NLS-1$
+				"p, 6dlu, p, 6dlu, p, 6dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 6dlu, p, 6dlu, p, 6dlu, p, 3dlu, p, 10dlu, p, 6dlu, p"); // rows //$NON-NLS-1$
 
 		// Create a builder that assists in adding components to the container.
 		// Wrap the panel with a standardized border.
@@ -224,12 +240,18 @@ public final class HelpDialog extends AbstractDialog {
 		builder.nextLine(2);
 		builder.nextColumn();
 		builder.append(license);
+		builder.nextLine(2);
+		builder.nextColumn();
+		builder.append(activation);
+		builder.nextLine(2);
+		builder.nextColumn();
+		builder.add(activationStatus, cc.xyw(1,  23, 3));
 		
 		builder.nextLine(2);
 		String version=VersionUtils.getVersion();
-		builder.addLabel(Messages.getContextString("Text.ShortTitle")+" "+"Version "+(version==null?"Unknown":version),cc.xyw(1,  21, 3));
+		builder.addLabel(Messages.getContextString("Text.ShortTitle")+" "+"Version "+(version==null?"Unknown":version),cc.xyw(1,  25, 3));
 		builder.nextLine(2);
-		builder.addLabel(Messages.getString("AboutDialog.copyright"),cc.xyw(1,  23, 3));
+		builder.addLabel(Messages.getString("AboutDialog.copyright"),cc.xyw(1,  27, 3));
 
 		
 		if (false || Environment.isProjectLibre()) { // removed donation link
@@ -247,6 +269,12 @@ public final class HelpDialog extends AbstractDialog {
 
 	protected boolean hasOkAndCancelButtons() {
 		return false;
+	}
+
+	private void updateActivationStatus() {
+		if (activationStatus != null) {
+			activationStatus.setText(ActivationUiSupport.formatSummary(ActivationService.getInstance().getCurrentSummary()));
+		}
 	}
 
 	public static JPanel makeDonatePanel(boolean border) {

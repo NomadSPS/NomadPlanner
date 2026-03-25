@@ -184,6 +184,7 @@ public interface MenuActionConstants {
 
 	public static final String ACTION_ABOUT_PROJECTLIBRE           = "AboutProjectLibre";
 	public static final String ACTION_PROJECTLIBRE_DOCUMENTATION   = "ProjectLibreDocumentation";
+	public static final String ACTION_ACTIVATION	          = "Activation";
 	public static final String ACTION_TIP_OF_THE_DAY	  	  = "TipOfTheDay";
 	public static final String ACTION_PROJECTLIBRE	  	  = "ProjectLibre";
 
